@@ -13,7 +13,11 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
 
     function provide(uint amount) public {
         if(totalSupply().mul(totalBalance()) == 0) _mint(msg.sender, amount * 1000);
-        else _mint(msg.sender, amount.mul(totalSupply()).div(totalBalance()));
+        else {
+          uint mint  = amount.mul(totalSupply()).div(totalBalance());
+          require(mint > 0, "Pool: Amount is too small")
+          _mint(msg.sender, mint);
+        }
         token.transferFrom(msg.sender, address(this), amount);
     }
 
