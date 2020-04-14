@@ -68,3 +68,14 @@ interface ILiquidityPool {
 interface IERCLiquidityPool is ILiquidityPool {
     function token() external view returns(IERC20);
 }
+
+interface ERC20Incorrect { // for the future
+  function balanceOf(address who) external constant returns (uint);
+  function transfer(address to, uint value) external;
+  function allowance(address owner, address spender) external constant returns (uint);
+  function transferFrom(address from, address to, uint value) external;
+  function approve(address spender, uint value) external;
+
+  event Approval(address indexed owner, address indexed spender, uint value);
+  event Transfer(address indexed from, address indexed to, uint value);
+}
