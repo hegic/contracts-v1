@@ -25,7 +25,10 @@ abstract contract HegicOptions is Ownable {
   }
 
   function setImpliedVolRate(uint value) public onlyOwner {impliedVolRate = value;}
-  function setMaxSpread(uint value) public onlyOwner {maxSpread = value;}
+  function setMaxSpread(uint value) public onlyOwner {
+    require(value <= 95, "Spread limit is too large");
+    maxSpread = value;
+  }
 
   event Create (uint indexed id, address indexed account, uint fee, uint premium);
   event Exercise (uint indexed id, uint exchangeAmount);
