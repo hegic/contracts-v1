@@ -18,7 +18,10 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
           require(mint > 0, "Pool: Amount is too small")
           _mint(msg.sender, mint);
         }
-        token.transferFrom(msg.sender, address(this), amount);
+        require(
+          token.transferFrom(msg.sender, address(this), amount),
+          "Insufficient funds"
+        );
     }
 
     function withdraw(uint amount) public {
@@ -27,7 +30,10 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
         require(burn <= balanceOf(msg.sender), "Pool: Amount is too large");
         require(burn > 0, "Pool: Amount is too small");
         _burn(msg.sender, burn);
-        token.transfer(msg.sender, amount);
+        require(
+          token.transfer(msg.sender, amount),
+          "Insufficient funds"
+        );
     }
 
     function shareOf(address user) public view returns (uint share){
@@ -51,6 +57,9 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
     function send(address payable to, uint amount) public override onlyOwner {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
         lockedAmount -= amount;
-        token.transfer(to, amount);
+        require(
+          token.transfer(to, amount),
+          "Insufficient funds"
+        );
     }
 }
