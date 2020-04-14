@@ -48,10 +48,10 @@ contract HegicPutOptions is HegicOptions {
       require(option.state == State.Active, "Wrong state");
       require(option.amount == msg.value, "Wrong value");
 
-      uint amount = exchange();
-      pool.send(option.holder, option.strikeAmount);
       option.state = State.Expired;
 
+      uint amount = exchange();
+      pool.send(option.holder, option.strikeAmount);
       emit Exercise(optionID, amount);
   }
 }

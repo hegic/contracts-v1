@@ -52,6 +52,8 @@ contract HegicCallOptions is HegicOptions {
         require(option.holder == msg.sender, "Wrong msg.sender");
         require(option.state == State.Active, "Wrong state");
 
+        option.state = State.Exercised;
+
         require(
           token.transferFrom(option.holder, address(this), option.strikeAmount),
           "Insufficient funds"
@@ -59,7 +61,6 @@ contract HegicCallOptions is HegicOptions {
 
         uint amount = exchange();
         pool.send(option.holder, option.amount);
-        option.state = State.Exercised;
 
         emit Exercise(optionID, amount);
     }

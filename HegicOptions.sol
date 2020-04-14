@@ -78,10 +78,11 @@ abstract contract HegicOptions is Ownable {
       require(option.expiration < now, "Option has not expired yet");
       require(option.state == State.Active, "Option is not active");
 
+      option.state = State.Expired;
+
       if(optionType == OptionType.Call) pool.unlock(option.amount);
       else pool.unlock(option.strikeAmount);
 
-      option.state = State.Expired;
       emit Expire(optionID);
   }
 
