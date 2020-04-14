@@ -29,6 +29,7 @@ contract HegicCallOptions is HegicOptions {
         (uint premium, uint fee,,,) = fees(period, amount, strike);
         uint strikeAmount = strike.mul(amount) / priceDecimals;
 
+        require(fee > premium,   "Period is too short");
         require(period >= 1 days,"Period is too short");
         require(period <= 8 weeks,"Period is too long");
         require(msg.value == premium, "Wrong value");
