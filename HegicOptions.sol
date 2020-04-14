@@ -24,7 +24,10 @@ abstract contract HegicOptions is Ownable {
     optionType = t;
   }
 
-  function setImpliedVolRate(uint value) public onlyOwner {impliedVolRate = value;}
+  function setImpliedVolRate(uint value) public onlyOwner {
+    require(value >= 10000, "ImpliedVolRate limit is too small");
+    impliedVolRate = value;
+  }
   function setMaxSpread(uint value) public onlyOwner {
     require(value <= 95, "Spread limit is too large");
     maxSpread = value;
