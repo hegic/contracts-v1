@@ -12,8 +12,13 @@ contract HegicPutOptions is HegicOptions {
   function exchange(uint amount) public returns (uint exchangedAmount) {
     UniswapExchangeInterface ex = exchanges.getExchange(token);
     uint exShare = ex.getEthToTokenInputPrice(1 ether); //e18
-    if( exShare > maxSpread.mul( priceProvider.currentAnswer() ).mul(1e8) )
+    if( exShare > maxSpread.mul( priceProvider.currentAnswer() ).mul(1e8) ){
+      highSpreadLockEnabled = false;
       exchangedAmount = ex.ethToTokenTransferInput {value: amount} (1, now + 1 minutes, address(pool));
+    }
+    else {
+      highSpreadLockEnabled = true;
+    }
   }
 
   function create(uint period, uint amount) public payable returns (uint optionID) {
@@ -25,7 +30,7 @@ contract HegicPutOptions is HegicOptions {
       uint strikeAmount = strike.mul(amount) / priceDecimals;
 
       require(strikeAmount > 0,"Amount is too small");
-      require(fee > premium,   "Period is too short");
+      require(fee < premium,   "Period is too short");
       require(period >= 1 days,"Period is too short");
       require(period <= 8 weeks,"Period is too long");
       require(msg.value == premium, "Wrong value");

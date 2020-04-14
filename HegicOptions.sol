@@ -2,7 +2,7 @@ pragma solidity ^0.6.4;
 import "./HegicERCPool.sol";
 import "./HegicETHPool.sol";
 
-abstract contract HegicOptions is Ownable {
+abstract contract HegicOptions is Ownable, SpreadLock {
   using SafeMath for uint;
 
   Option[] public options;
@@ -15,6 +15,7 @@ abstract contract HegicOptions is Ownable {
   IERC20 token;
   ILiquidityPool public pool;
   OptionType private optionType;
+  bool public override highSpreadLockEnabled;
 
 
   constructor(IERC20 DAI, IPriceProvider pp, IUniswapFactory ex, OptionType t) public {

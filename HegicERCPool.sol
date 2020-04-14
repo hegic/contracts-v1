@@ -12,10 +12,11 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
     function totalBalance() public override view returns (uint balance) { balance = token.balanceOf(address(this));}
 
     function provide(uint amount) public {
+        require(!SpreadLock(owner()).highSpreadLockEnabled(), "Pool: Locked");
         if(totalSupply().mul(totalBalance()) == 0) _mint(msg.sender, amount * 1000);
         else {
           uint mint  = amount.mul(totalSupply()).div(totalBalance());
-          require(mint > 0, "Pool: Amount is too small")
+          require(mint > 0, "Pool: Amount is too small");
           _mint(msg.sender, mint);
         }
         require(
