@@ -18,7 +18,8 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
     function withdraw(uint amount) public {
         require(amount <= availableBalance(), "Pool: Insufficient unlocked funds");
         uint burn = amount.mul(totalSupply()).div(totalBalance());
-        require(burn <= balanceOf(msg.sender), "Amount is too large");
+        require(burn <= balanceOf(msg.sender), "Pool: Amount is too large");
+        require(burn > 0, "Pool: Amount is too small");
         _burn(msg.sender, burn);
         msg.sender.transfer(amount);
     }
