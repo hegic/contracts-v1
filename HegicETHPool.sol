@@ -9,19 +9,29 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
     function availableBalance() public view returns (uint balance) {balance = totalBalance().sub(lockedAmount);}
     function totalBalance() public override view returns (uint balance) { balance = address(this).balance;}
 
-    function provide() public payable {
+    function provide(uint minMint) public payable returns (uint mint) {
+        mint = provide();
+        require(mint >= minMint, "Pool: Mint limit is too large");
+    }
+
+    function provide() public payable returns (uint mint) {
         require(!SpreadLock(owner()).highSpreadLockEnabled(), "Pool: Locked");
         if(totalSupply().mul(totalBalance()) == 0) _mint(msg.sender, msg.value.mul(1000));
         else {
-          uint mint  = msg.value.mul(totalSupply()).div(totalBalance());
+          mint  = msg.value.mul(totalSupply()).div(totalBalance());
           require(mint > 0, "Pool: Amount is too small");
           _mint(msg.sender, mint);
         }
     }
 
-    function withdraw(uint amount) public {
+    function withdraw(uint amount, uint maxBurn) public returns (uint burn) {
+      burn = withdraw(amount);
+      require(burn <= maxBurn, "Pool: Burn limit is too small");
+    }
+
+    function withdraw(uint amount) public returns (uint burn) {
         require(amount <= availableBalance(), "Pool: Insufficient unlocked funds");
-        uint burn = amount.mul(totalSupply()).div(totalBalance());
+        burn = amount.mul(totalSupply()).div(totalBalance());
         require(burn <= balanceOf(msg.sender), "Pool: Amount is too large");
         require(burn > 0, "Pool: Amount is too small");
         _burn(msg.sender, burn);

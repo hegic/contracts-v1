@@ -30,7 +30,7 @@ contract HegicPutOptions is HegicOptions {
       uint strikeAmount = strike.mul(amount) / priceDecimals;
 
       require(strikeAmount > 0,"Amount is too small");
-      require(fee < premium,   "Period is too short");
+      require(fee < premium,  "Premium is too small");
       require(period >= 1 days,"Period is too short");
       require(period <= 8 weeks,"Period is too long");
       require(msg.value == premium, "Wrong value");
