@@ -16,12 +16,12 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
 
     function provide() public payable returns (uint mint) {
         require(!SpreadLock(owner()).highSpreadLockEnabled(), "Pool: Locked");
-        if(totalSupply().mul(totalBalance()) == 0) _mint(msg.sender, msg.value.mul(1000));
-        else {
-          mint  = msg.value.mul(totalSupply()).div(totalBalance());
-          require(mint > 0, "Pool: Amount is too small");
-          _mint(msg.sender, mint);
-        }
+        if(totalSupply().mul(totalBalance()) == 0)
+          mint = msg.value.mul(1000);
+        else
+          mint = msg.value.mul(totalSupply()).div(totalBalance());
+        require(mint > 0, "Pool: Amount is too small");
+        _mint(msg.sender, mint);
     }
 
     function withdraw(uint amount, uint maxBurn) public returns (uint burn) {

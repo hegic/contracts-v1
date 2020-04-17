@@ -1,4 +1,4 @@
-pragma solidity ^0.6.4;
+pragma solidity ^0.6.6;
 import "./HegicOptions.sol";
 
 contract HegicCallOptions is HegicOptions {
