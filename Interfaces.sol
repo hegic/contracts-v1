@@ -59,6 +59,8 @@ interface IPriceProvider {
 }
 
 interface ILiquidityPool {
+    event Withdraw(address indexed account, uint amount, uint writeAmount);
+    event Provide (address indexed account, uint amount, uint writeAmount);
     function totalBalance() external view returns (uint amount);
     function lock(uint amount) external;
     function unlock(uint amount) external;

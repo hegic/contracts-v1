@@ -24,6 +24,7 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
           mint = amount.mul(totalSupply()).div(totalBalance());
 
         require(mint > 0, "Pool: Amount is too small");
+        emit Provide(msg.sender, amount, mint);
         require(
           token.transferFrom(msg.sender, address(this), amount),
           "Insufficient funds"
@@ -42,6 +43,7 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
         require(burn <= balanceOf(msg.sender), "Pool: Amount is too large");
         require(burn > 0, "Pool: Amount is too small");
         _burn(msg.sender, burn);
+        emit Withdraw(msg.sender, amount, burn);
         require(
           token.transfer(msg.sender, amount),
           "Insufficient funds"
