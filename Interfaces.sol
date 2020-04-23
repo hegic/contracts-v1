@@ -1,6 +1,7 @@
 pragma solidity ^0.6.6;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@chainlink/contracts/src/v0.6/dev/AggregatorInterface.sol";
 
 interface  IUniswapFactory {
     function getExchange(IERC20 token)  external view returns (UniswapExchangeInterface exchange);
@@ -52,10 +53,6 @@ interface UniswapExchangeInterface {
     // function totalSupply() external view returns (uint256);
     // // Never use
     // function setup(address token_addr) external;
-}
-
-interface IPriceProvider {
-    function currentAnswer() external view returns (uint);
 }
 
 interface ILiquidityPool {

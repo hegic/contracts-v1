@@ -2,7 +2,7 @@ pragma solidity ^0.6.6;
 import "./HegicOptions.sol";
 
 contract HegicPutOptions is HegicOptions {
-  constructor(IERC20 DAI, IPriceProvider pp, IUniswapFactory ex)
+  constructor(IERC20 DAI, AggregatorInterface pp, IUniswapFactory ex)
     HegicOptions(DAI, pp, ex, HegicOptions.OptionType.Put) public {
       pool = new HegicERCPool(DAI);
   }
@@ -12,7 +12,7 @@ contract HegicPutOptions is HegicOptions {
   function exchange(uint amount) public returns (uint exchangedAmount) {
     UniswapExchangeInterface ex = exchanges.getExchange(token);
     uint exShare = ex.getEthToTokenInputPrice(1 ether); //e18
-    if( exShare > maxSpread.mul( priceProvider.currentAnswer() ).mul(1e8) ){
+    if( exShare > maxSpread.mul( uint(priceProvider.latestAnswer()) ).mul(1e8) ){
       highSpreadLockEnabled = false;
       exchangedAmount = ex.ethToTokenTransferInput {value: amount} (1, now + 1 minutes, address(pool));
     }
@@ -22,7 +22,7 @@ contract HegicPutOptions is HegicOptions {
   }
 
   function create(uint period, uint amount) public payable returns (uint optionID) {
-    return create(period, amount, priceProvider.currentAnswer());
+    return create(period, amount, uint(priceProvider.latestAnswer()));
   }
 
   function create(uint period, uint amount, uint strike) public payable returns (uint optionID) {

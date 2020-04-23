@@ -10,7 +10,7 @@ abstract contract HegicOptions is Ownable, SpreadLock {
   uint public maxSpread = 95;//%
   uint constant priceDecimals = 1e8;
   uint constant activationTime = 15 minutes;
-  IPriceProvider public priceProvider;
+  AggregatorInterface public priceProvider;
   IUniswapFactory public exchanges;
   IERC20 token;
   ILiquidityPool public pool;
@@ -18,7 +18,7 @@ abstract contract HegicOptions is Ownable, SpreadLock {
   bool public override highSpreadLockEnabled;
 
 
-  constructor(IERC20 DAI, IPriceProvider pp, IUniswapFactory ex, OptionType t) public {
+  constructor(IERC20 DAI, AggregatorInterface pp, IUniswapFactory ex, OptionType t) public {
     token = DAI;
     priceProvider = pp;
     exchanges = ex;
@@ -62,7 +62,7 @@ abstract contract HegicOptions is Ownable, SpreadLock {
 
   function fees(uint period, uint amount, uint strike) public view
     returns (uint premium, uint hegicFee, uint strikeFee, uint slippageFee, uint periodFee) {
-      uint currentPrice = priceProvider.currentAnswer();
+      uint currentPrice = uint(priceProvider.latestAnswer());
       hegicFee = getHegicFee(amount);
       periodFee = getPeriodFee(amount, period, strike, currentPrice);
       slippageFee = getSlippageFee(amount);
