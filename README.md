@@ -53,10 +53,10 @@ ETH Put Options are created and exercised via **HegicPutOptions** and **HegicERC
 
 |Contract|Description|Mainnet Address|
 |---|---|---|
-|[`HegicCallOptions`](https://github.com/hegic/hegic-contracts-v1/blob/master/HegicCallOptions.sol)|ETH Call Options|[0x1c4823024627c978f758a4f2f67d7eae94838b04](https://etherscan.io/address/0x1c4823024627c978f758a4f2f67d7eae94838b04)|
-|[`HegicPutOptions`](https://github.com/hegic/hegic-contracts-v1/blob/master/HegicPutOptions.sol)|ETH Put Options|[0x7e8f1650Cc4C2964D00250e2bC5c84a409348152](https://etherscan.io/address/0x7e8f1650Cc4C2964D00250e2bC5c84a409348152)|
-|[`HegicETHPool`](https://github.com/hegic/hegic-contracts-v1/blob/master/HegicETHPool.sol)|ETH Liquidity Pool|[0x476ae277b5c5dc199F82C681989b8021fD9d8D50](https://etherscan.io/address/0x476ae277b5c5dc199F82C681989b8021fD9d8D50)|
-|[`HegicERCPool`](https://github.com/hegic/hegic-contracts-v1/blob/master/HegicERCPool.sol)|ERC Liquidity Pool|[0xA2C77163B1a00A153A224F3f0b6b0e5cd19524ed](https://etherscan.io/address/0xA2C77163B1a00A153A224F3f0b6b0e5cd19524ed)|
+|[`HegicCallOptions`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicCallOptions.sol)|ETH Call Options|[0x1c4823024627c978f758a4f2f67d7eae94838b04](https://etherscan.io/address/0x1c4823024627c978f758a4f2f67d7eae94838b04)|
+|[`HegicPutOptions`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicPutOptions.sol)|ETH Put Options|[0x7e8f1650Cc4C2964D00250e2bC5c84a409348152](https://etherscan.io/address/0x7e8f1650Cc4C2964D00250e2bC5c84a409348152)|
+|[`HegicETHPool`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicETHPool.sol)|ETH Liquidity Pool|[0x476ae277b5c5dc199F82C681989b8021fD9d8D50](https://etherscan.io/address/0x476ae277b5c5dc199F82C681989b8021fD9d8D50)|
+|[`HegicERCPool`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicERCPool.sol)|ERC Liquidity Pool|[0xA2C77163B1a00A153A224F3f0b6b0e5cd19524ed](https://etherscan.io/address/0xA2C77163B1a00A153A224F3f0b6b0e5cd19524ed)|
 |`Aggregator`|ETH/USD Price Feed|[0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F](https://etherscan.io/address/0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F)|
 
 
