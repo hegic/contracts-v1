@@ -23,9 +23,7 @@ The core of the Hegic Protocol V1 is a system of [Solidity smart contracts](http
 
 ## What are Options
 
-An option is a contract giving the buyer *the right, but not the obligation*, to buy (in the case of a call option contract) or sell (in the case of a put option contract) the underlying asset *at a specific price on or before a certain date*. Traders can use on-chain options for speculation or to hedge their positions. Options are known as *derivatives* because they derive their value from an underlying asset. 
-
-Learn more about options and Hegic Protocol on [GitBook](https://hegic.gitbook.io/start/).
+An option is a contract giving the buyer *the right, but not the obligation*, to buy (in the case of a call option contract) or sell (in the case of a put option contract) the underlying asset *at a specific price on or before a certain date*. Traders can use on-chain options for speculation or to hedge their positions. Options are known as *derivatives* because they derive their value from an underlying asset. Learn more about options and Hegic Protocol on [GitBook](https://hegic.gitbook.io/start/).
 
 ## How Hegic Protocol V1 Works
 
