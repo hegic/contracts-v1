@@ -1,7 +1,27 @@
+/*
+ * Hegic
+ * Copyright (C) 2020 Hegic
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
 pragma solidity ^0.6.6;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.6/dev/AggregatorInterface.sol";
+
 
 interface  IUniswapFactory {
     function getExchange(IERC20 token)  external view returns (UniswapExchangeInterface exchange);
@@ -55,6 +75,7 @@ interface UniswapExchangeInterface {
     // function setup(address token_addr) external;
 }
 
+
 interface ILiquidityPool {
     event Withdraw(address indexed account, uint amount, uint writeAmount);
     event Provide (address indexed account, uint amount, uint writeAmount);
@@ -64,21 +85,24 @@ interface ILiquidityPool {
     function send(address payable account, uint amount) external;
 }
 
+
 interface IERCLiquidityPool is ILiquidityPool {
     function token() external view returns(IERC20);
 }
 
-interface ERC20Incorrect { // for the future
-  function balanceOf(address who) external view returns (uint);
-  function transfer(address to, uint value) external;
-  function allowance(address owner, address spender) external view returns (uint);
-  function transferFrom(address from, address to, uint value) external;
-  function approve(address spender, uint value) external;
 
-  event Approval(address indexed owner, address indexed spender, uint value);
-  event Transfer(address indexed from, address indexed to, uint value);
+interface ERC20Incorrect { // for the future
+    function balanceOf(address who) external view returns (uint);
+    function transfer(address to, uint value) external;
+    function allowance(address owner, address spender) external view returns (uint);
+    function transferFrom(address from, address to, uint value) external;
+    function approve(address spender, uint value) external;
+
+    event Approval(address indexed owner, address indexed spender, uint value);
+    event Transfer(address indexed from, address indexed to, uint value);
 }
 
+
 interface SpreadLock {
-  function highSpreadLockEnabled() external returns (bool);
+    function highSpreadLockEnabled() external returns (bool);
 }

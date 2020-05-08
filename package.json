@@ -1,0 +1,24 @@
+{
+  "name": "hegic-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "author": "",
+  "license": "GPLv3",
+  "devDependencies": {
+    "@chainlink/contracts": "^0.0.3",
+    "@openzeppelin/contracts": "^3.0.1",
+    "@openzeppelin/test-environment": "^0.1.4",
+    "@truffle/debug-utils": "^4.1.1",
+    "@truffle/hdwallet-provider": "^1.0.33",
+    "chai": "^4.2.0",
+    "mocha": "^7.1.2",
+    "truffle": "^5.1.14-nodeLTS.0"
+  }
+}
