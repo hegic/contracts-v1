@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 pragma solidity ^0.6.4;
 import "./Interfaces.sol";
@@ -25,10 +25,14 @@ import "./Interfaces.sol";
  * @title Hegic ETH Liquidity Pool
  * @notice Accumulates liquidity in ETH from providers and distributes P&L in ETH
  */
-contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "writeETH"){
+contract HegicETHPool is
+    ILiquidityPool,
+    Ownable,
+    ERC20("Hegic ETH LP Token", "writeETH")
+{
     using SafeMath for uint256;
-    uint public lockedAmount;
-    mapping(address => uint) private lastProvideBlock;
+    uint256 public lockedAmount;
+    mapping(address => uint256) private lastProvideBlock;
 
     /*
      * @nonce Send premiums to the liquidity pool
@@ -39,7 +43,7 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @nonce Returns the available amount in ETH for withdrawals
      * @return balance Unlocked amount
      */
-    function availableBalance() public view returns (uint balance) {
+    function availableBalance() public view returns (uint256 balance) {
         balance = totalBalance().sub(lockedAmount);
     }
 
@@ -47,7 +51,7 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @nonce Returns the ETH total balance provided to the pool
      * @return balance Pool balance
      */
-    function totalBalance() public override view returns (uint balance) {
+    function totalBalance() public override view returns (uint256 balance) {
         balance = address(this).balance;
     }
 
@@ -56,7 +60,7 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @param minMint Low limit tokens that should be received
      * @return mint Received tokens amount
      */
-    function provide(uint minMint) public payable returns (uint mint) {
+    function provide(uint256 minMint) public payable returns (uint256 mint) {
         mint = provide();
         require(mint >= minMint, "Pool: Mint limit is too large");
     }
@@ -65,13 +69,14 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @nonce A provider supplies ETH to the pool and receives writeETH tokens
      * @return mint Tokens amount received
      */
-    function provide() public payable returns (uint mint) {
+    function provide() public payable returns (uint256 mint) {
         lastProvideBlock[msg.sender] = block.number;
         require(!SpreadLock(owner()).highSpreadLockEnabled(), "Pool: Locked");
-        if(totalSupply().mul(totalBalance()) == 0)
-            mint = msg.value.mul(1000);
+        if (totalSupply().mul(totalBalance()) == 0) mint = msg.value.mul(1000);
         else
-            mint = msg.value.mul(totalSupply()).div(totalBalance().sub(msg.value));
+            mint = msg.value.mul(totalSupply()).div(
+                totalBalance().sub(msg.value)
+            );
         require(mint > 0, "Pool: Amount is too small");
         emit Provide(msg.sender, msg.value, mint);
         _mint(msg.sender, mint);
@@ -83,7 +88,10 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @param maxBurn Upper limit tokens that can be burned
      * @return burn Tokens amount burnt
      */
-    function withdraw(uint amount, uint maxBurn) public returns (uint burn) {
+    function withdraw(uint256 amount, uint256 maxBurn)
+        public
+        returns (uint256 burn)
+    {
         burn = withdraw(amount);
         require(burn <= maxBurn, "Pool: Burn limit is too small");
     }
@@ -93,12 +101,15 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @param amount ETH amount to receive
      * @return burn Tokens amount burnt
      */
-    function withdraw(uint amount) public returns (uint burn) {
+    function withdraw(uint256 amount) public returns (uint256 burn) {
         require(
             lastProvideBlock[msg.sender] != block.number,
             "Pool: Provide & Withdraw in one block"
         );
-        require(amount <= availableBalance(), "Pool: Insufficient unlocked funds");
+        require(
+            amount <= availableBalance(),
+            "Pool: Insufficient unlocked funds"
+        );
         burn = amount.mul(totalSupply()).div(totalBalance());
         require(burn <= balanceOf(msg.sender), "Pool: Amount is too large");
         require(burn > 0, "Pool: Amount is too small");
@@ -112,20 +123,20 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @param account User address
      * @return A share of the provider in ETH
      */
-    function shareOf(address account) public view returns (uint share){
-        if(totalBalance() > 0) share = totalBalance()
-            .mul(balanceOf(account))
-            .div(totalSupply());
+    function shareOf(address account) public view returns (uint256 share) {
+        if (totalBalance() > 0)
+            share = totalBalance().mul(balanceOf(account)).div(totalSupply());
     }
 
     /*
      * @nonce calls by HegicCallOptions to lock funds
      * @param amount Funds that should be locked
      */
-    function lock(uint amount) public override onlyOwner {
+    function lock(uint256 amount) public override onlyOwner {
         require(
             lockedAmount.add(amount).mul(10).div(totalBalance()) < 8,
-            "Pool: Insufficient unlocked funds" );
+            "Pool: Insufficient unlocked funds"
+        );
         lockedAmount = lockedAmount.add(amount);
     }
 
@@ -133,7 +144,7 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @nonce calls by HegicCallOptions to unlock funds
      * @param amount Funds that should be unlocked
      */
-    function unlock(uint amount) public override onlyOwner {
+    function unlock(uint256 amount) public override onlyOwner {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
         lockedAmount = lockedAmount.sub(amount);
     }
@@ -143,9 +154,13 @@ contract HegicETHPool is ILiquidityPool, Ownable, ERC20("Hegic ETH LP Token", "w
      * @param to Provider
      * @param amount Funds that should be sent
      */
-    function send(address payable to, uint amount) public override onlyOwner {
+    function send(address payable to, uint256 amount)
+        public
+        override
+        onlyOwner
+    {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
         lockedAmount -= amount;
         to.transfer(amount);
     }
-  }
+}

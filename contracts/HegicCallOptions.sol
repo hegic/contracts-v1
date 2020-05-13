@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 pragma solidity ^0.6.6;
 import "./HegicOptions.sol";
@@ -47,15 +47,15 @@ contract HegicCallOptions is HegicOptions {
      * @notice Allows the Uniswap pool to swap the assets
      */
     function approve() public {
-        token.approve(address(exchanges.getExchange(token)), uint(-1));
+        token.approve(address(exchanges.getExchange(token)), uint256(-1));
     }
 
     /**
      * @notice Swap a specific amount of DAI tokens for ETH and send it to the ETH liquidity pool
      * @return exchangedAmount An amount to receive from the Uniswap pool
      */
-    function exchange() public override returns (uint exchangedAmount) {
-        return exchange( token.balanceOf(address(this)) );
+    function exchange() public override returns (uint256 exchangedAmount) {
+        return exchange(token.balanceOf(address(this)));
     }
 
     /**
@@ -63,29 +63,29 @@ contract HegicCallOptions is HegicOptions {
      * @param amount A specific amount to swap
      * @return exchangedAmount An amount that was received from the Uniswap pool
      */
-    function exchange(uint amount) public returns (uint exchangedAmount) {
-      UniswapExchangeInterface ex = exchanges.getExchange(token);
-      uint exShare =  ex.getTokenToEthInputPrice(
-          uint(priceProvider.latestAnswer()).mul(1e10)
-      );
-      if(exShare > maxSpread.mul(0.01 ether)){
-          highSpreadLockEnabled = false;
-          exchangedAmount = ex.tokenToEthTransferInput(
-              amount,
-              1,
-              now + 1 minutes,
-              address(pool)
-          );
-      } else {
-          highSpreadLockEnabled = true;
-      }
+    function exchange(uint256 amount) public returns (uint256 exchangedAmount) {
+        UniswapExchangeInterface ex = exchanges.getExchange(token);
+        uint256 exShare = ex.getTokenToEthInputPrice(
+            uint256(priceProvider.latestAnswer()).mul(1e10)
+        );
+        if (exShare > maxSpread.mul(0.01 ether)) {
+            highSpreadLockEnabled = false;
+            exchangedAmount = ex.tokenToEthTransferInput(
+                amount,
+                1,
+                now + 1 minutes,
+                address(pool)
+            );
+        } else {
+            highSpreadLockEnabled = true;
+        }
     }
 
     /**
      * @notice Distributes the premiums between the liquidity providers
      * @param amount Premiums amount that will be sent to the pool
      */
-    function sendPremium(uint amount) override internal {
+    function sendPremium(uint256 amount) internal override {
         payable(address(pool)).transfer(amount);
     }
 
@@ -93,7 +93,7 @@ contract HegicCallOptions is HegicOptions {
      * @notice Locks the amount required for an option
      * @param option A specific option contract
      */
-    function lockFunds(Option memory option) override internal {
+    function lockFunds(Option memory option) internal override {
         pool.lock(option.amount);
     }
 
@@ -101,10 +101,14 @@ contract HegicCallOptions is HegicOptions {
      * @notice Receives DAI tokens from the user and sends ETH from the pool
      * @param option A specific option contract
      */
-    function swapFunds(Option memory option) override internal {
+    function swapFunds(Option memory option) internal override {
         require(msg.value == 0, "Wrong msg.value");
         require(
-            token.transferFrom(option.holder, address(this), option.strikeAmount),
+            token.transferFrom(
+                option.holder,
+                address(this),
+                option.strikeAmount
+            ),
             "Insufficient funds"
         );
         pool.send(option.holder, option.amount);
@@ -114,7 +118,7 @@ contract HegicCallOptions is HegicOptions {
      * @notice Locks the amount required for an option contract
      * @param option A specific option contract
      */
-    function unlockFunds(Option memory option) override internal {
+    function unlockFunds(Option memory option) internal override {
         pool.unlock(option.amount);
     }
 }

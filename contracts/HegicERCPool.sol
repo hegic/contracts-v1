@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 pragma solidity ^0.6.6;
 import "./Interfaces.sol";
@@ -25,11 +25,15 @@ import "./Interfaces.sol";
  * @title Hegic DAI Liquidity Pool
  * @notice Accumulates liquidity in DAI from providers and distributes P&L in DAI
  */
-contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token", "writeDAI"){
+contract HegicERCPool is
+    IERCLiquidityPool,
+    Ownable,
+    ERC20("Hegic DAI LP Token", "writeDAI")
+{
     using SafeMath for uint256;
-    uint public lockedAmount;
-    mapping(address => uint) private lastProvideBlock;
-    IERC20 public override token;
+    uint256 public lockedAmount;
+    mapping(address => uint256) private lastProvideBlock;
+    IERC20 public token;
 
     /*
      * @return _token DAI Address
@@ -42,7 +46,7 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @nonce Returns the available amount in DAI for withdrawals
      * @return balance Unlocked amount
      */
-    function availableBalance() public view returns (uint balance) {
+    function availableBalance() public view returns (uint256 balance) {
         balance = totalBalance().sub(lockedAmount);
     }
 
@@ -50,8 +54,8 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @nonce Returns the DAI total balance provided to the pool
      * @return balance Pool balance
      */
-    function totalBalance() public override view returns (uint balance) {
-         balance = token.balanceOf(address(this));
+    function totalBalance() public override view returns (uint256 balance) {
+        balance = token.balanceOf(address(this));
     }
 
     /*
@@ -60,7 +64,10 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @param minMint Low limit tokens that should be received
      * @return mint Received tokens amount
      */
-    function provide(uint amount, uint minMint) public returns (uint mint) {
+    function provide(uint256 amount, uint256 minMint)
+        public
+        returns (uint256 mint)
+    {
         mint = provide(amount);
         require(mint >= minMint, "Pool: Mint limit is too large");
     }
@@ -70,13 +77,11 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @param amount Provided tokens
      * @return mint Tokens amount received
      */
-    function provide(uint amount) public returns (uint mint) {
+    function provide(uint256 amount) public returns (uint256 mint) {
         lastProvideBlock[msg.sender] = block.number;
         require(!SpreadLock(owner()).highSpreadLockEnabled(), "Pool: Locked");
-        if(totalSupply().mul(totalBalance()) == 0)
-            mint = amount.mul(1000);
-        else
-            mint = amount.mul(totalSupply()).div(totalBalance());
+        if (totalSupply().mul(totalBalance()) == 0) mint = amount.mul(1000);
+        else mint = amount.mul(totalSupply()).div(totalBalance());
 
         require(mint > 0, "Pool: Amount is too small");
         emit Provide(msg.sender, amount, mint);
@@ -93,7 +98,10 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @param maxBurn Upper limit tokens that can be burned
      * @return burn Tokens amount burnt
      */
-    function withdraw(uint amount, uint maxBurn) public returns (uint burn) {
+    function withdraw(uint256 amount, uint256 maxBurn)
+        public
+        returns (uint256 burn)
+    {
         burn = withdraw(amount);
         require(burn <= maxBurn, "Pool: Burn limit is too small");
     }
@@ -103,21 +111,21 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @param amount DAI amount to receive
      * @return mint Tokens amount burnt
      */
-    function withdraw(uint amount) public returns (uint burn) {
+    function withdraw(uint256 amount) public returns (uint256 burn) {
         require(
             lastProvideBlock[msg.sender] != block.number,
             "Pool: Provide & Withdraw in one block"
         );
-        require(amount <= availableBalance(), "Pool: Insufficient unlocked funds");
+        require(
+            amount <= availableBalance(),
+            "Pool: Insufficient unlocked funds"
+        );
         burn = amount.mul(totalSupply()).div(totalBalance());
         require(burn <= balanceOf(msg.sender), "Pool: Amount is too large");
         require(burn > 0, "Pool: Amount is too small");
         _burn(msg.sender, burn);
         emit Withdraw(msg.sender, amount, burn);
-        require(
-            token.transfer(msg.sender, amount),
-            "Insufficient funds"
-        );
+        require(token.transfer(msg.sender, amount), "Insufficient funds");
     }
 
     /*
@@ -125,8 +133,8 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @param account User address
      * @return A share of the provider in DAI
      */
-    function shareOf(address user) public view returns (uint share){
-        if(totalBalance() > 0)
+    function shareOf(address user) public view returns (uint256 share) {
+        if (totalBalance() > 0)
             share = totalBalance().mul(balanceOf(user)).div(totalSupply());
     }
 
@@ -134,9 +142,9 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @nonce calls by HegicPutOptions to lock funds
      * @param amount Funds that should be locked
      */
-    function lock(uint amount) public override onlyOwner {
+    function lock(uint256 amount) public override onlyOwner {
         require(
-            lockedAmount.add(amount).mul(10).div( totalBalance() ) < 8,
+            lockedAmount.add(amount).mul(10).div(totalBalance()) < 8,
             "Pool: Insufficient unlocked funds"
         );
         lockedAmount = lockedAmount.add(amount);
@@ -146,7 +154,7 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @nonce calls by HegicPutOptions to unlock funds
      * @param amount Funds that should be unlocked
      */
-    function unlock(uint amount) public override onlyOwner {
+    function unlock(uint256 amount) public override onlyOwner {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
         lockedAmount = lockedAmount.sub(amount);
     }
@@ -156,12 +164,13 @@ contract HegicERCPool is IERCLiquidityPool, Ownable, ERC20("Hegic DAI LP Token",
      * @param to Provider
      * @param amount Funds that should be sent
      */
-    function send(address payable to, uint amount) public override onlyOwner {
+    function send(address payable to, uint256 amount)
+        public
+        override
+        onlyOwner
+    {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
         lockedAmount -= amount;
-        require(
-            token.transfer(to, amount),
-            "Insufficient funds"
-        );
+        require(token.transfer(to, amount), "Insufficient funds");
     }
 }
