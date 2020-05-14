@@ -14,8 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
+ */
 
 pragma solidity ^0.6.6;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -23,8 +22,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.6/dev/AggregatorInterface.sol";
 
 
-interface  IUniswapFactory {
-    function getExchange(IERC20 token)  external view returns (UniswapExchangeInterface exchange);
+interface IUniswapFactory {
+    function getExchange(IERC20 token)
+        external
+        view
+        returns (UniswapExchangeInterface exchange);
 }
 
 
@@ -37,18 +39,36 @@ interface UniswapExchangeInterface {
     // function addLiquidity(uint256 min_liquidity, uint256 max_tokens, uint256 deadline) external payable returns (uint256);
     // function removeLiquidity(uint256 amount, uint256 min_eth, uint256 min_tokens, uint256 deadline) external returns (uint256, uint256);
     // // Get Prices
-    function getEthToTokenInputPrice(uint256 eth_sold) external view returns (uint256 tokens_bought);
+    function getEthToTokenInputPrice(uint256 eth_sold)
+        external
+        view
+        returns (uint256 tokens_bought);
+
     // function getEthToTokenOutputPrice(uint256 tokens_bought) external view returns (uint256 eth_sold);
-    function getTokenToEthInputPrice(uint256 tokens_sold) external view returns (uint256 eth_bought);
+    function getTokenToEthInputPrice(uint256 tokens_sold)
+        external
+        view
+        returns (uint256 eth_bought);
+
     // function getTokenToEthOutputPrice(uint256 eth_bought) external view returns (uint256 tokens_sold);
     // // Trade ETH to ERC20
     // function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline) external payable returns (uint256  tokens_bought);
-    function ethToTokenTransferInput(uint256 min_tokens, uint256 deadline, address recipient) external payable returns (uint256  tokens_bought);
+    function ethToTokenTransferInput(
+        uint256 min_tokens,
+        uint256 deadline,
+        address recipient
+    ) external payable returns (uint256 tokens_bought);
+
     // function ethToTokenSwapOutput(uint256 tokens_bought, uint256 deadline) external payable returns (uint256  eth_sold);
     // function ethToTokenTransferOutput(uint256 tokens_bought, uint256 deadline, address recipient) external payable returns (uint256  eth_sold);
     // // Trade ERC20 to ETH
     // function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline) external returns (uint256  eth_bought);
-    function tokenToEthTransferInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline, address recipient) external returns (uint256  eth_bought);
+    function tokenToEthTransferInput(
+        uint256 tokens_sold,
+        uint256 min_eth,
+        uint256 deadline,
+        address recipient
+    ) external returns (uint256 eth_bought);
     // function tokenToEthSwapOutput(uint256 eth_bought, uint256 max_tokens, uint256 deadline) external returns (uint256  tokens_sold);
     // function tokenToEthTransferOutput(uint256 eth_bought, uint256 max_tokens, uint256 deadline, address recipient) external returns (uint256  tokens_sold);
     // // Trade ERC20 to ERC20
@@ -77,29 +97,53 @@ interface UniswapExchangeInterface {
 
 
 interface ILiquidityPool {
-    event Withdraw(address indexed account, uint amount, uint writeAmount);
-    event Provide (address indexed account, uint amount, uint writeAmount);
-    function totalBalance() external view returns (uint amount);
-    function lock(uint amount) external;
-    function unlock(uint amount) external;
-    function send(address payable account, uint amount) external;
+    event Withdraw(
+        address indexed account,
+        uint256 amount,
+        uint256 writeAmount
+    );
+    event Provide(address indexed account, uint256 amount, uint256 writeAmount);
+
+    function totalBalance() external view returns (uint256 amount);
+
+    function lock(uint256 amount) external;
+
+    function unlock(uint256 amount) external;
+
+    function send(address payable account, uint256 amount) external;
 }
 
 
 interface IERCLiquidityPool is ILiquidityPool {
-    function token() external view returns(IERC20);
+    function token() external view returns (IERC20);
 }
 
 
-interface ERC20Incorrect { // for the future
-    function balanceOf(address who) external view returns (uint);
-    function transfer(address to, uint value) external;
-    function allowance(address owner, address spender) external view returns (uint);
-    function transferFrom(address from, address to, uint value) external;
-    function approve(address spender, uint value) external;
+interface ERC20Incorrect {
+    // for the future
+    function balanceOf(address who) external view returns (uint256);
 
-    event Approval(address indexed owner, address indexed spender, uint value);
-    event Transfer(address indexed from, address indexed to, uint value);
+    function transfer(address to, uint256 value) external;
+
+    function allowance(address owner, address spender)
+        external
+        view
+        returns (uint256);
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 value
+    ) external;
+
+    function approve(address spender, uint256 value) external;
+
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
+    event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
 

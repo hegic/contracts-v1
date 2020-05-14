@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test"
+    "test": "truffle test",
+    "lint": "prettier './**/*.js' './**/*.sol' './**/*.md' --write"
   },
   "author": "",
   "license": "GPLv3",
@@ -19,6 +20,8 @@
     "@truffle/hdwallet-provider": "^1.0.33",
     "chai": "^4.2.0",
     "mocha": "^7.1.2",
+    "prettier": "^2.0.5",
+    "prettier-plugin-solidity": "^1.0.0-alpha.51",
     "truffle": "^5.1.14-nodeLTS.0"
   }
 }
