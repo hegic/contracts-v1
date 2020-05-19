@@ -7,7 +7,7 @@ const PutHedge = artifacts.require("HegicPutOptions")
 const ETHPool = artifacts.require("HegicETHPool")
 const ERCPool = artifacts.require("HegicERCPool")
 
-const priceProviderSettings = {currentAnswer: new BN(200e8)}
+const priceProviderSettings = { currentAnswer: new BN(200e8) }
 
 module.exports = async function (deployer, network) {
   try {
