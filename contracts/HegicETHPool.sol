@@ -160,7 +160,7 @@ contract HegicETHPool is
         onlyOwner
     {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
-        lockedAmount -= amount;
+        lockedAmount = lockedAmount.sub(amount);
         to.transfer(amount);
     }
 }
