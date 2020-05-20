@@ -33,7 +33,7 @@ contract HegicERCPool is
     using SafeMath for uint256;
     uint256 public lockedAmount;
     mapping(address => uint256) private lastProvideBlock;
-    IERC20 public token;
+    IERC20 public override token;
 
     /*
      * @return _token DAI Address

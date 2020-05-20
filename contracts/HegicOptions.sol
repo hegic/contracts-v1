@@ -39,7 +39,7 @@ abstract contract HegicOptions is Ownable, SpreadLock {
     IERC20 token;
     ILiquidityPool public pool;
     OptionType private optionType;
-    bool public highSpreadLockEnabled;
+    bool public override highSpreadLockEnabled;
 
     event Create(
         uint256 indexed id,
