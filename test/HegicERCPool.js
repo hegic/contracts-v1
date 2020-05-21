@@ -1,4 +1,4 @@
-const {getContracts, toWei} = require("./utils/utils.js")
+const {getContracts, toWei, timeTravel} = require("./utils/utils.js")
 const BN = web3.utils.BN
 
 // const firstProvide  = new BN( '1000000000000000000' )
@@ -97,6 +97,8 @@ contract("HegicERCPool", ([user1, user2, user3]) => {
       ERCPool.shareOf(user3),
     ])
 
+    await timeTravel(14 * 24 * 3600 + 1)
+    // await ERCPool.lockupPeriod().then(timeTravel)
     const gasPrice = await web3.eth.getGasPrice().then((x) => new BN(x))
     const logs = await ERCPool.withdraw(value)
     const endBalance = await DAI.balanceOf(user1)

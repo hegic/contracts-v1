@@ -1,5 +1,5 @@
 const BN = web3.utils.BN
-const Exchange = artifacts.require("FakeUniswapFactory")
+const Exchange = artifacts.require("FakeExchange")
 const StableCoin = artifacts.require("FakeUSD")
 const PriceProvider = artifacts.require("FakePriceProvider")
 const CallHedge = artifacts.require("HegicCallOptions")
@@ -7,7 +7,7 @@ const PutHedge = artifacts.require("HegicPutOptions")
 const ETHPool = artifacts.require("HegicETHPool")
 const ERCPool = artifacts.require("HegicERCPool")
 
-const priceProviderSettings = { currentAnswer: new BN(200e8) }
+const priceProviderSettings = {currentAnswer: new BN(200e8)}
 
 module.exports = async function (deployer, network) {
   try {
@@ -21,12 +21,7 @@ module.exports = async function (deployer, network) {
         PriceProvider.address,
         Exchange.address
       )
-      await deployer.deploy(
-        CallHedge,
-        StableCoin.address,
-        PriceProvider.address,
-        Exchange.address
-      )
+      await deployer.deploy(CallHedge, PriceProvider.address)
     } else if (network == "main") {
       const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
       const ChainLink = "0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F"

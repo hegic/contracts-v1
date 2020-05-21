@@ -1,6 +1,7 @@
-/*
+/**
+ * SPDX-License-Identifier: GPL-3.0-or-later
  * Hegic
- * Copyright (C) 2020 Hegic
+ * Copyright (C) 2020 Hegic Protocol
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.6.6;
+pragma solidity ^0.6.8;
 import "./Interfaces.sol";
 
 
 /**
  * @author 0mllwntrmt3
  * @title Hegic DAI Liquidity Pool
- * @notice Accumulates liquidity in DAI from providers and distributes P&L in DAI
+ * @notice Accumulates liquidity in DAI from LPs and distributes P&L in DAI
  */
 contract HegicERCPool is
     IERCLiquidityPool,
@@ -31,8 +32,10 @@ contract HegicERCPool is
     ERC20("Hegic DAI LP Token", "writeDAI")
 {
     using SafeMath for uint256;
+    uint256 public lockupPeriod = 2 weeks;
     uint256 public lockedAmount;
-    mapping(address => uint256) private lastProvideBlock;
+    uint256 public lockedPremium;
+    mapping(address => uint256) private lastProvideTimestamp;
     IERC20 public override token;
 
     /*
@@ -42,8 +45,17 @@ contract HegicERCPool is
         token = _token;
     }
 
+    /**
+     * @notice Used for changing the lockup period
+     * @param value New period value
+     */
+    function setLockupPeriod(uint256 value) public override onlyOwner {
+        require(value <= 60 days, "ImpliedVolRate limit is too small");
+        lockupPeriod = value;
+    }
+
     /*
-     * @nonce Returns the available amount in DAI for withdrawals
+     * @nonce Returns the amount of DAI available for withdrawals
      * @return balance Unlocked amount
      */
     function availableBalance() public view returns (uint256 balance) {
@@ -55,14 +67,14 @@ contract HegicERCPool is
      * @return balance Pool balance
      */
     function totalBalance() public override view returns (uint256 balance) {
-        balance = token.balanceOf(address(this));
+        balance = token.balanceOf(address(this)).sub(lockedPremium);
     }
 
     /*
      * @nonce A provider supplies DAI to the pool and receives writeDAI tokens
      * @param amount Amount provided
-     * @param minMint Low limit tokens that should be received
-     * @return mint Received tokens amount
+     * @param minMint Minimum amount of tokens that should be received by a provider
+     * @return mint Amount of tokens to be received
      */
     function provide(uint256 amount, uint256 minMint)
         public
@@ -75,11 +87,10 @@ contract HegicERCPool is
     /*
      * @nonce A provider supplies DAI to the pool and receives writeDAI tokens
      * @param amount Provided tokens
-     * @return mint Tokens amount received
+     * @return mint Amount of tokens to be received
      */
     function provide(uint256 amount) public returns (uint256 mint) {
-        lastProvideBlock[msg.sender] = block.number;
-        require(!SpreadLock(owner()).highSpreadLockEnabled(), "Pool: Locked");
+        lastProvideTimestamp[msg.sender] = now;
         if (totalSupply().mul(totalBalance()) == 0) mint = amount.mul(1000);
         else mint = amount.mul(totalSupply()).div(totalBalance());
 
@@ -93,10 +104,10 @@ contract HegicERCPool is
     }
 
     /*
-     * @nonce Provider burns writeDAI and receives DAI back from the pool
-     * @param amount DAI amount to receive
-     * @param maxBurn Upper limit tokens that can be burned
-     * @return burn Tokens amount burnt
+     * @nonce Provider burns writeDAI and receives DAI from the pool
+     * @param amount Amount of DAI to receive
+     * @param maxBurn Maximum amount of tokens that can be burned
+     * @return burn Amount of tokens to be burnt
      */
     function withdraw(uint256 amount, uint256 maxBurn)
         public
@@ -107,14 +118,14 @@ contract HegicERCPool is
     }
 
     /*
-     * @nonce Provider burns writeDAI and receives DAI back from the pool
-     * @param amount DAI amount to receive
-     * @return mint Tokens amount burnt
+     * @nonce Provider burns writeDAI and receives DAI from the pool
+     * @param amount Amount of DAI to receive
+     * @return mint Amount of tokens to be burnt
      */
     function withdraw(uint256 amount) public returns (uint256 burn) {
         require(
-            lastProvideBlock[msg.sender] != block.number,
-            "Pool: Provide & Withdraw in one block"
+            lastProvideTimestamp[msg.sender].add(lockupPeriod) <= now,
+            "Pool: Withdrawal is locked up"
         );
         require(
             amount <= availableBalance(),
@@ -129,9 +140,9 @@ contract HegicERCPool is
     }
 
     /*
-     * @nonce Returns a share of the provider in DAI
-     * @param account User address
-     * @return A share of the provider in DAI
+     * @nonce Returns provider's share in DAI
+     * @param account Provider's address
+     * @return Provider's share in DAI
      */
     function shareOf(address user) public view returns (uint256 share) {
         if (totalBalance() > 0)
@@ -140,7 +151,7 @@ contract HegicERCPool is
 
     /*
      * @nonce calls by HegicPutOptions to lock funds
-     * @param amount Funds that should be locked
+     * @param amount Amount of funds that should be locked in an option
      */
     function lock(uint256 amount) public override onlyOwner {
         require(
@@ -151,8 +162,8 @@ contract HegicERCPool is
     }
 
     /*
-     * @nonce calls by HegicPutOptions to unlock funds
-     * @param amount Funds that should be unlocked
+     * @nonce Calls by HegicPutOptions to unlock funds
+     * @param amount Amount of funds that should be unlocked in an expired option
      */
     function unlock(uint256 amount) public override onlyOwner {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
@@ -160,9 +171,30 @@ contract HegicERCPool is
     }
 
     /*
-     * @nonce calls by HegicPutOptions to send funds to the provider after an option is closed
+     * @nonce Calls by HegicPutOptions to send and lock the premiums
+     * @param amount Funds that should be locked
+     */
+    function sendPremium(uint256 amount) public override onlyOwner {
+        require(
+            token.transferFrom(msg.sender, address(this), amount),
+            "Token transfer error: insufficient funds"
+        );
+        lockedPremium = lockedPremium.add(amount);
+    }
+
+    /*
+     * @nonce Calls by HegicPutOptions to unlock premium after an option expiraton
+     * @param amount Amount of premiums that should be locked
+     */
+    function unlockPremium(uint256 amount) public override onlyOwner {
+        require(lockedPremium >= amount, "Pool: Insufficient locked funds");
+        lockedPremium = lockedPremium.sub(amount);
+    }
+
+    /*
+     * @nonce calls by HegicPutOptions to unlock the premiums after an option's expiraton
      * @param to Provider
-     * @param amount Funds that should be sent
+     * @param amount Amount of premiums that should be unlocked
      */
     function send(address payable to, uint256 amount)
         public
@@ -170,7 +202,6 @@ contract HegicERCPool is
         onlyOwner
     {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
-        lockedAmount = lockedAmount.sub(amount);
         require(token.transfer(to, amount), "Insufficient funds");
     }
 }

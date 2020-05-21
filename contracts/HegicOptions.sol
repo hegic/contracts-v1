@@ -1,6 +1,7 @@
-/*
+/**
+ * SPDX-License-Identifier: GPL-3.0-or-later
  * Hegic
- * Copyright (C) 2020 Hegic
+ * Copyright (C) 2020 Hegic Protocol
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,70 +17,58 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.6.6;
+pragma solidity ^0.6.8;
 import "./HegicERCPool.sol";
 import "./HegicETHPool.sol";
 
 
 /**
  * @author 0mllwntrmt3
- * @title Hegic put options
- * @notice Put options contract
+ * @title Hegic: On-chain Options Trading Protocol on Ethereum
+ * @notice Hegic Protocol Options Contract
  */
-abstract contract HegicOptions is Ownable, SpreadLock {
+abstract contract HegicOptions is Ownable {
     using SafeMath for uint256;
 
+    address settlementFeeRecipient = owner();
     Option[] public options;
     uint256 public impliedVolRate = 18000;
-    uint256 public maxSpread = 95; //%
     uint256 constant priceDecimals = 1e8;
-    uint256 constant activationTime = 15 minutes;
+    uint256 internal contractCreationTimestamp = now;
     AggregatorInterface public priceProvider;
-    IUniswapFactory public exchanges;
-    IERC20 token;
-    ILiquidityPool public pool;
     OptionType private optionType;
-    bool public override highSpreadLockEnabled;
 
+    event Test(uint256 value);
     event Create(
         uint256 indexed id,
         address indexed account,
         uint256 settlementFee,
         uint256 totalFee
     );
-    event Exercise(uint256 indexed id, uint256 exchangeAmount);
-    event Expire(uint256 indexed id);
+    event Exercise(uint256 indexed id, uint256 profit);
+    event Expire(uint256 indexed id, uint256 premium);
     enum State {Active, Exercised, Expired}
     enum OptionType {Put, Call}
     struct Option {
         State state;
         address payable holder;
-        uint256 strikeAmount;
+        uint256 strike;
         uint256 amount;
+        uint256 premium;
         uint256 expiration;
-        uint256 activation;
     }
 
     /**
-     * @param DAI The address of the DAI token
-     * @param pp The address of the ChainLink ETH/USD price feed contract
-     * @param ex The address of the Uniswap Factory
-     * @param _type Put or call contract type
+     * @param pp The address of ChainLink ETH/USD price feed contract
+     * @param _type Put or Call type of an option contract
      */
-    constructor(
-        IERC20 DAI,
-        AggregatorInterface pp,
-        IUniswapFactory ex,
-        OptionType _type
-    ) public {
-        token = DAI;
+    constructor(AggregatorInterface pp, OptionType _type) public {
         priceProvider = pp;
-        exchanges = ex;
         optionType = _type;
     }
 
     /**
-     * @notice Used to adjust prices
+     * @notice Used for adjusting the options prices while balancing asset's implied volatility rate
      * @param value New IVRate value
      */
     function setImpliedVolRate(uint256 value) public onlyOwner {
@@ -88,23 +77,21 @@ abstract contract HegicOptions is Ownable, SpreadLock {
     }
 
     /**
-     * @notice Used to adjust the spread limit
-     * @param value New maxSpread value
+     * @notice Used for changing settlementFeeRecipient
+     * @param value New settlementFee recipient address
      */
-    function setMaxSpread(uint256 value) public onlyOwner {
-        require(value <= 95, "Spread limit is too large");
-        maxSpread = value;
+    function setSettlementFeeRecipient(address value) public onlyOwner {
+        settlementFeeRecipient = value;
     }
 
     /**
-     * @notice Used to get actual option's prices
-     * @param period Option period in seconds (1 days <= period <= 8 weeks)
+     * @notice Used for getting the actual options prices
+     * @param period Option period in seconds (1 days <= period <= 4 weeks)
      * @param amount Option amount
-     * @param strike Strike price of the option
-     * @return total Total price needs to be paid
-     * @return settlementFee Amount to be distributed between the HEGIC token holders
+     * @param strike Strike price of an option
+     * @return total Total price to be paid
+     * @return settlementFee Amount to be distributed to the HEGIC token holders
      * @return strikeFee Amount that covers the price difference in the ITM options
-     * @return slippageFee Compensates the slippage during the exercising process
      * @return periodFee Option period fee
      */
     function fees(
@@ -118,21 +105,19 @@ abstract contract HegicOptions is Ownable, SpreadLock {
             uint256 total,
             uint256 settlementFee,
             uint256 strikeFee,
-            uint256 slippageFee,
             uint256 periodFee
         )
     {
         uint256 currentPrice = uint256(priceProvider.latestAnswer());
         settlementFee = getSettlementFee(amount);
         periodFee = getPeriodFee(amount, period, strike, currentPrice);
-        slippageFee = getSlippageFee(amount);
         strikeFee = getStrikeFee(amount, strike, currentPrice);
-        total = periodFee.add(slippageFee).add(strikeFee);
+        total = periodFee.add(strikeFee);
     }
 
     /**
-     * @notice Creates ATM option
-     * @param period Option period in seconds (1 days <= period <= 8 weeks)
+     * @notice Creates an ATM option
+     * @param period Option period in seconds (1 days <= period <= 4 weeks)
      * @param amount Option amount
      * @return optionID Created option's ID
      */
@@ -146,7 +131,7 @@ abstract contract HegicOptions is Ownable, SpreadLock {
 
     /**
      * @notice Creates a new option
-     * @param period Option period in sconds (1 days <= period <= 8 weeks)
+     * @param period Option period in sconds (1 days <= period <= 4 weeks)
      * @param amount Option amount
      * @param strike Strike price of an option
      * @return optionID Created option's ID
@@ -156,7 +141,7 @@ abstract contract HegicOptions is Ownable, SpreadLock {
         uint256 amount,
         uint256 strike
     ) public payable returns (uint256 optionID) {
-        (uint256 total, uint256 settlementFee, , , ) = fees(
+        (uint256 total, uint256 settlementFee, , ) = fees(
             period,
             amount,
             strike
@@ -166,23 +151,23 @@ abstract contract HegicOptions is Ownable, SpreadLock {
         require(strikeAmount > 0, "Amount is too small");
         require(settlementFee < total, "Premium is too small");
         require(period >= 1 days, "Period is too short");
-        require(period <= 8 weeks, "Period is too long");
+        require(period <= 4 weeks, "Period is too long");
         require(msg.value == total, "Wrong value");
-        payable(owner()).transfer(settlementFee);
+        payable(settlementFeeRecipient).transfer(settlementFee);
 
+        uint256 premium = sendPremium(total.sub(settlementFee));
         optionID = options.length;
         options.push(
             Option(
                 State.Active,
                 msg.sender,
-                strikeAmount,
+                strike,
                 amount,
-                now + period,
-                now + activationTime
+                premium,
+                now + period
             )
         );
 
-        sendPremium(total.sub(settlementFee));
         lockFunds(options[optionID]);
         emit Create(optionID, msg.sender, settlementFee, total);
     }
@@ -191,19 +176,17 @@ abstract contract HegicOptions is Ownable, SpreadLock {
      * @notice Exercise your active option
      * @param optionID ID of your option
      */
-    function exercise(uint256 optionID) public payable {
+    function exercise(uint256 optionID) public {
         Option storage option = options[optionID];
 
         require(option.expiration >= now, "Option has expired");
-        require(option.activation <= now, "Option has not been activated yet");
         require(option.holder == msg.sender, "Wrong msg.sender");
         require(option.state == State.Active, "Wrong state");
 
         option.state = State.Exercised;
-        swapFunds(option);
+        uint256 profit = payProfit(option);
 
-        uint256 amount = exchange();
-        emit Exercise(optionID, amount);
+        emit Exercise(optionID, profit);
     }
 
     /**
@@ -224,11 +207,11 @@ abstract contract HegicOptions is Ownable, SpreadLock {
         require(option.state == State.Active, "Option is not active");
         option.state = State.Expired;
         unlockFunds(option);
-        emit Expire(optionID);
+        emit Expire(optionID, option.premium);
     }
 
     /**
-     * @notice Counts settlementFee
+     * @notice Calculates settlementFee
      * @param amount Option amount
      * @return fee Settlment fee amount
      */
@@ -241,9 +224,9 @@ abstract contract HegicOptions is Ownable, SpreadLock {
     }
 
     /**
-     * @notice Counts periodFee
+     * @notice Calculates periodFee
      * @param amount Option amount
-     * @param period Option period in seconds (1 days <= period <= 8 weeks)
+     * @param period Option period in seconds (1 days <= period <= 4 weeks)
      * @param strike Strike price of the option
      * @param currentPrice Current ETH price
      * @return fee Period fee amount
@@ -271,23 +254,10 @@ abstract contract HegicOptions is Ownable, SpreadLock {
     }
 
     /**
-     * @notice Calculates slippageFee
+     * @notice Calculates strikeFee
      * @param amount Option amount
-     * @return fee Slippage fee amount
-     */
-    function getSlippageFee(uint256 amount)
-        internal
-        pure
-        returns (uint256 fee)
-    {
-        if (amount > 10 ether) fee = amount.mul(amount) / 1e22;
-    }
-
-    /**
-     * @notice Counts strikeFee
-     * @param amount Option amount
-     * @param strike Strike price of the option
-     * @param currentPrice Current ether price
+     * @param strike Strike price of an option
+     * @param currentPrice Current price of ETH
      * @return fee Strike fee amount
      */
     function getStrikeFee(
@@ -301,15 +271,20 @@ abstract contract HegicOptions is Ownable, SpreadLock {
             fee = (currentPrice - strike).mul(amount).div(currentPrice);
     }
 
-    function exchange() public virtual returns (uint256 exchangedAmount);
-
-    function sendPremium(uint256 amount) internal virtual;
+    function sendPremium(uint256 amount)
+        internal
+        virtual
+        returns (uint256 locked);
 
     function lockFunds(Option memory option) internal virtual;
 
-    function swapFunds(Option memory option) internal virtual;
+    function payProfit(Option memory option)
+        internal
+        virtual
+        returns (uint256 amount);
 
     function unlockFunds(Option memory option) internal virtual;
+
 
     /**
      * @return res Square root of the number

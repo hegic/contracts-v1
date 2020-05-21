@@ -1,9 +1,6 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider")
 const infuraKey = "a6fbe259558b4c8baf936d949d3d310d"
 const pk = [process.env.PK]
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
   networks: {
@@ -49,18 +46,16 @@ module.exports = {
   },
 
   // Set default mocha options here, use special reporters etc.
-  mocha: {
-    slow: 1000,
-  },
+  mocha: {slow: 10000},
 
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.6.6", // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.6.8", // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {
         // See the solidity docs for advice about optimization and evmVersion
-        optimizer: { enabled: true, runs: 200 },
+        optimizer: {enabled: true, runs: 200},
         evmVersion: "istanbul",
       },
     },

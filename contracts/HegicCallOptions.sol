@@ -1,6 +1,7 @@
-/*
+/**
+ * SPDX-License-Identifier: GPL-3.0-or-later
  * Hegic
- * Copyright (C) 2020 Hegic
+ * Copyright (C) 2020 Hegic Protocol
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.6.6;
+pragma solidity ^0.6.8;
 import "./HegicOptions.sol";
 
 
@@ -26,67 +27,41 @@ import "./HegicOptions.sol";
  * @notice ETH Call Options Contract
  */
 contract HegicCallOptions is HegicOptions {
+    HegicETHPool public pool;
     /**
-     * @param DAI The address of the DAI token
-     * @param priceProvider The address of the ChainLink ETH/USD price feed contract
-     * @param uniswap The address of the Uniswap Factory
+     * @param priceProvider The address of ChainLink ETH/USD price feed contract
      */
-    constructor(
-        IERC20 DAI,
-        AggregatorInterface priceProvider,
-        IUniswapFactory uniswap
-    )
+    constructor(AggregatorInterface priceProvider)
         public
-        HegicOptions(DAI, priceProvider, uniswap, HegicOptions.OptionType.Call)
+        HegicOptions(priceProvider, HegicOptions.OptionType.Call)
     {
         pool = new HegicETHPool();
-        approve();
     }
 
     /**
-     * @notice Allows the Uniswap pool to swap the assets
+     * @notice Can be used to update the contract in critical situations in the first 90 days after deployment
      */
-    function approve() public {
-        token.approve(address(exchanges.getExchange(token)), uint256(-1));
+    function transferPoolOwnership() public onlyOwner {
+        require(now < contractCreationTimestamp + 90 days);
+        pool.transferOwnership(owner());
     }
 
     /**
-     * @notice Swap a specific amount of DAI tokens for ETH and send it to the ETH liquidity pool
-     * @return exchangedAmount An amount to receive from the Uniswap pool
+     * @notice Used for changing the lockup period
+     * @param value New period value
      */
-    function exchange() public override returns (uint256 exchangedAmount) {
-        return exchange(token.balanceOf(address(this)));
+    function setLockupPeriod(uint256 value) public onlyOwner {
+        require(value <= 60 days, "LockupPeriod is too small");
+        pool.setLockupPeriod(value);
     }
 
     /**
-     * @notice Swap a specific amount of DAI tokens for ETH and send it to the ETH liquidity pool
-     * @param amount A specific amount to swap
-     * @return exchangedAmount An amount that was received from the Uniswap pool
+     * @notice Sends premiums to the ETH liquidity pool contract
+     * @param amount The amount of premiums that will be sent to the pool
      */
-    function exchange(uint256 amount) public returns (uint256 exchangedAmount) {
-        UniswapExchangeInterface ex = exchanges.getExchange(token);
-        uint256 exShare = ex.getTokenToEthInputPrice(
-            uint256(priceProvider.latestAnswer()).mul(1e10)
-        );
-        if (exShare > maxSpread.mul(0.01 ether)) {
-            highSpreadLockEnabled = false;
-            exchangedAmount = ex.tokenToEthTransferInput(
-                amount,
-                1,
-                now + 1 minutes,
-                address(pool)
-            );
-        } else {
-            highSpreadLockEnabled = true;
-        }
-    }
-
-    /**
-     * @notice Distributes the premiums between the liquidity providers
-     * @param amount Premiums amount that will be sent to the pool
-     */
-    function sendPremium(uint256 amount) internal override {
-        payable(address(pool)).transfer(amount);
+    function sendPremium(uint amount) internal override returns (uint locked) {
+        pool.sendPremium {value: amount}();
+        locked = amount;
     }
 
     /**
@@ -98,27 +73,24 @@ contract HegicCallOptions is HegicOptions {
     }
 
     /**
-     * @notice Receives DAI tokens from the user and sends ETH from the pool
+     * @notice Sends profits in ETH from the ETH pool to a call option holder's address
      * @param option A specific option contract
      */
-    function swapFunds(Option memory option) internal override {
-        require(msg.value == 0, "Wrong msg.value");
-        require(
-            token.transferFrom(
-                option.holder,
-                address(this),
-                option.strikeAmount
-            ),
-            "Insufficient funds"
-        );
-        pool.send(option.holder, option.amount);
+    function payProfit(Option memory option) internal override returns (uint profit){
+        uint currentPrice = uint(priceProvider.latestAnswer());
+        require(option.strike <= currentPrice, "Current price is too low");
+        profit = currentPrice.sub(option.strike).mul(option.amount).div(currentPrice);
+        emit Test(profit);
+        pool.send(option.holder, profit);
+        unlockFunds(option);
     }
 
     /**
-     * @notice Locks the amount required for an option contract
+     * @notice Unlocks the amount that was locked in a call option contract
      * @param option A specific option contract
      */
     function unlockFunds(Option memory option) internal override {
+        pool.unlockPremium(option.premium);
         pool.unlock(option.amount);
     }
 }

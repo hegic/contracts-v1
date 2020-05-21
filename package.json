@@ -14,8 +14,6 @@
   "author": "",
   "license": "GPLv3",
   "devDependencies": {
-    "@chainlink/contracts": "^0.0.3",
-    "@openzeppelin/contracts": "^3.0.1",
     "@openzeppelin/test-environment": "^0.1.4",
     "@truffle/debug-utils": "^4.1.1",
     "@truffle/hdwallet-provider": "^1.0.33",
@@ -25,5 +23,10 @@
     "prettier": "^2.0.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.51",
     "truffle": "^5.1.14-nodeLTS.0"
+  },
+  "dependencies": {
+    "@chainlink/contracts": "^0.0.3",
+    "@openzeppelin/contracts": "^3.0.1",
+    "@uniswap/v2-periphery": "^1.0.0-beta.0"
   }
 }

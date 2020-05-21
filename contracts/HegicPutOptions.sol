@@ -1,6 +1,7 @@
-/*
+/**
+ * SPDX-License-Identifier: GPL-3.0-or-later
  * Hegic
- * Copyright (C) 2020 Hegic
+ * Copyright (C) 2020 Hegic Protocol
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,9 +15,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
-pragma solidity ^0.6.6;
+pragma solidity ^0.6.8;
 import "./HegicOptions.sol";
 
 
@@ -26,79 +27,109 @@ import "./HegicOptions.sol";
  * @notice ETH Put Options Contract
  */
 contract HegicPutOptions is HegicOptions {
+    IUniswapV2Router01 public uniswapRouter;
+    HegicERCPool public pool;
+    uint256 public maxSpread = 95;
+    IERC20 token;
+
     /**
-     * @param DAI The address of the DAI token
-     * @param priceProvider The address of the ChainLink ETH/USD price feed contract
-     * @param uniswap The address of the Uniswap Factory
+     * @param DAI The address of DAI token contract
+     * @param priceProvider The address of ChainLink ETH/USD price feed contract
+     * @param _uniswapRouter The address of Uniswap Router contract
      */
     constructor(
         IERC20 DAI,
         AggregatorInterface priceProvider,
-        IUniswapFactory uniswap
+        IUniswapV2Router01 _uniswapRouter
     )
         public
-        HegicOptions(DAI, priceProvider, uniswap, HegicOptions.OptionType.Put)
+        HegicOptions(priceProvider, HegicOptions.OptionType.Put)
     {
-        pool = new HegicERCPool(DAI);
+        token = DAI;
+        uniswapRouter = _uniswapRouter;
+        pool = new HegicERCPool(token);
+        approve();
     }
 
     /**
-     * @notice Swaps ETH for DAI tokens and sends to the DAI liquidity pool
-     * @return exchangedAmount Amount that is received from the Uniswap pool
+     * @notice Can be used to update the contract in critical situations in the first 90 days after deployment
      */
-    function exchange() public override returns (uint) {
-        return exchange(address(this).balance);
+    function transferPoolOwnership() public onlyOwner {
+        require(now < contractCreationTimestamp + 90 days);
+        pool.transferOwnership(owner());
     }
 
     /**
-     * @notice Swap a specific amount of ETH for DAI tokens and send it to the DAI liquidity pool
-     * @param amount A specific amount to swap
-     * @return exchangedAmount An amount to receive from the Uniswap pool
+     * @notice Used for adjusting the spread limit
+     * @param value New maxSpread value
      */
-    function exchange(uint amount) public returns (uint exchangedAmount) {
-        UniswapExchangeInterface ex = exchanges.getExchange(token);
-        uint exShare = ex.getEthToTokenInputPrice(1 ether);
-        if(exShare > maxSpread.mul(uint(priceProvider.latestAnswer())).mul(1e8)) {
-            highSpreadLockEnabled = false;
-            exchangedAmount = ex.ethToTokenTransferInput {value: amount} (
-                1,
-                now + 1 minutes,
-                address(pool)
-            );
-        } else {
-            highSpreadLockEnabled = true;
-        }
+    function setMaxSpread(uint256 value) public onlyOwner {
+        require(value <= 95, "Spread limit is too small");
+        maxSpread = value;
     }
 
     /**
-     * @notice Distributes the premiums between the liquidity providers
+     * @notice Allows the ERC pool contract to receive and send tokens
      */
-    function sendPremium(uint) override internal {
-        exchange();
+    function approve() public {
+        token.approve(address(pool), uint256(-1));
+    }
+
+    /**
+     * @notice Used for changing the lockup period
+     * @param value New period value
+     */
+    function setLockupPeriod(uint256 value) public onlyOwner {
+        require(value <= 60 days, "LockupPeriod is too small");
+        pool.setLockupPeriod(value);
+    }
+
+    /**
+     * @notice Sends premiums to the ERC liquidity pool contract
+     */
+    function sendPremium(uint256 amount) internal override returns (uint premium) {
+      uint currentPrice = uint(priceProvider.latestAnswer());
+      address[] memory path = new address[](2);
+      path[0] = uniswapRouter.WETH();
+      path[1] = address(token);
+      uint[] memory amounts = uniswapRouter.swapExactETHForTokens {
+          value: amount
+      }(
+          amount.mul(currentPrice).mul(maxSpread).div(1e10),
+          path,
+          address(this),
+          now
+      );
+      premium = amounts[amounts.length - 1];
+      pool.sendPremium(premium);
     }
 
     /**
      * @notice Locks the amount required for an option
      * @param option A specific option contract
      */
-    function lockFunds(Option memory option) override internal {
-        pool.lock(option.strikeAmount);
+    function lockFunds(Option memory option) internal override {
+        pool.lock(option.amount.mul(option.strike).div(1e8));
     }
 
     /**
-     * @notice Receives ETH from the user and sends DAI tokens from the pool
+     * @notice Sends profits in DAI from the ERC pool to a put option holder's address
      * @param option A specific option contract
      */
-    function swapFunds(Option memory option) override internal {
-        require(option.amount == msg.value, "Wrong msg.value");
-        pool.send(option.holder, option.strikeAmount);
+    function payProfit(Option memory option) internal override returns (uint profit) {
+        uint currentPrice = uint(priceProvider.latestAnswer());
+        require(option.strike >= currentPrice, "Current price is too high");
+        profit = option.strike.sub(currentPrice).mul(option.amount).div(1e8);
+        pool.send(option.holder, profit);
+        unlockFunds(option);
     }
 
     /**
-     * @notice Locks the amount required for an option contract
+     * @notice Unlocks the amount that was locked in a put option contract
      * @param option A specific option contract
      */
-    function unlockFunds(Option memory option) override internal {
-        pool.unlock(option.strikeAmount);
+    function unlockFunds(Option memory option) internal override {
+        pool.unlockPremium(option.premium);
+        pool.unlock(option.amount.mul(option.strike).div(1e8));
     }
 }
