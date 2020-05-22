@@ -352,6 +352,14 @@ contract("HegicPutOptions", ([user1, user2, user3]) => {
         exercisePrice: new BN(200e8).mul(new BN(testPoint)).div(new BN(100)),
       }))
 
+  for (const testPoint of [190, 195, 200, 205, 210])
+    it(`Show price for $${testPoint} strike`, () =>
+      testOption({
+        createPrice: new BN(200e8),
+        strike: new BN(testPoint).mul(new BN(1e8)),
+        exercisePrice: new BN(190e8),
+      }))
+
   it("Shouldn't pay profit for exercised option when price is increased", () =>
     testOption({
       createPrice: new BN(200e8),

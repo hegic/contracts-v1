@@ -32,7 +32,7 @@ abstract contract HegicOptions is Ownable {
 
     address settlementFeeRecipient = owner();
     Option[] public options;
-    uint256 public impliedVolRate = 18000;
+    uint256 public impliedVolRate = 20000;
     uint256 constant priceDecimals = 1e8;
     uint256 internal contractCreationTimestamp = now;
     AggregatorInterface public priceProvider;

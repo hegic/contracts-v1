@@ -9,7 +9,8 @@
   "scripts": {
     "ganache": "ganache-cli",
     "test": "truffle test",
-    "lint": "prettier './**/*.js' './**/*.sol' './**/*.md' --write"
+    "lint": "prettier './**/*.js' './**/*.sol' './**/*.md' --write",
+    "flat": "truffle-flattener test/Import.flat >> build/flat.sol"
   },
   "author": "",
   "license": "GPLv3",
@@ -22,7 +23,8 @@
     "mocha": "^7.1.2",
     "prettier": "^2.0.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.51",
-    "truffle": "^5.1.14-nodeLTS.0"
+    "truffle": "^5.1.14-nodeLTS.0",
+    "truffle-flattener": "^1.4.4"
   },
   "dependencies": {
     "@chainlink/contracts": "^0.0.3",

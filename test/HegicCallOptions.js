@@ -351,6 +351,14 @@ contract("HegicCallOptions", ([user1, user2, user3, user4]) => {
       exercisePrice: new BN(200e8 - 1),
     }))
 
+  for (const testPoint of [190, 195, 200, 205, 210])
+    it(`Show price for $${testPoint} strike`, () =>
+      testOption({
+        createPrice: new BN(200e8),
+        strike: new BN(testPoint).mul(new BN(1e8)),
+        exercisePrice: new BN(190e8),
+      }))
+
   it("Should withdraw funds from the pool", async () => {
     const {DAI, ETHPool} = await contracts
     const value = await ETHPool.availableBalance()
