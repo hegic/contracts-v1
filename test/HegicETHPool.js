@@ -1,4 +1,4 @@
-const {getContracts, toWei, timeTravel} = require("./utils/utils.js")
+const {getContracts, toWei, timeTravel, MAX_INTEGER} = require("./utils/utils.js")
 const BN = web3.utils.BN
 
 // const firstProvide  = new BN( '1000000000000000000' )
@@ -95,7 +95,7 @@ contract("HegicETHPool", ([user1, user2, user3]) => {
 
     await timeTravel(14 * 24 * 3600 + 1)
     const gasPrice = await web3.eth.getGasPrice().then((x) => new BN(x))
-    const transactionFee = await ETHPool.withdraw(value)
+    const transactionFee = await ETHPool.withdraw(value, MAX_INTEGER)
       .then((x) => new BN(x.receipt.gasUsed))
       .then((x) => x.mul(gasPrice))
     const endBalance = await web3.eth.getBalance(user1).then((x) => new BN(x))

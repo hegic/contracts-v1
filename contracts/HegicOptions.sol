@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.6.8;
+pragma solidity 0.6.8;
 import "./HegicERCPool.sol";
 import "./HegicETHPool.sol";
 
@@ -27,28 +27,30 @@ import "./HegicETHPool.sol";
  * @title Hegic: On-chain Options Trading Protocol on Ethereum
  * @notice Hegic Protocol Options Contract
  */
-abstract contract HegicOptions is Ownable {
+abstract
+contract HegicOptions is Ownable {
     using SafeMath for uint256;
 
-    address settlementFeeRecipient = owner();
+    address payable public settlementFeeRecipient;
     Option[] public options;
-    uint256 public impliedVolRate = 20000;
-    uint256 constant priceDecimals = 1e8;
-    uint256 internal contractCreationTimestamp = now;
+    uint256 public impliedVolRate;
+    uint256 internal constant PRICE_DECIMALS = 1e8;
+    uint256 internal contractCreationTimestamp;
     AggregatorInterface public priceProvider;
     OptionType private optionType;
 
-    event Test(uint256 value);
     event Create(
         uint256 indexed id,
         address indexed account,
         uint256 settlementFee,
         uint256 totalFee
     );
+
     event Exercise(uint256 indexed id, uint256 profit);
     event Expire(uint256 indexed id, uint256 premium);
     enum State {Active, Exercised, Expired}
     enum OptionType {Put, Call}
+
     struct Option {
         State state;
         address payable holder;
@@ -65,23 +67,97 @@ abstract contract HegicOptions is Ownable {
     constructor(AggregatorInterface pp, OptionType _type) public {
         priceProvider = pp;
         optionType = _type;
+        settlementFeeRecipient = payable(owner());
+        impliedVolRate = 6500;
+        contractCreationTimestamp = now;
     }
 
     /**
      * @notice Used for adjusting the options prices while balancing asset's implied volatility rate
      * @param value New IVRate value
      */
-    function setImpliedVolRate(uint256 value) public onlyOwner {
-        require(value >= 10000, "ImpliedVolRate limit is too small");
+    function setImpliedVolRate(uint256 value) external onlyOwner {
+        require(value >= 1000, "ImpliedVolRate limit is too small");
         impliedVolRate = value;
     }
 
     /**
      * @notice Used for changing settlementFeeRecipient
-     * @param value New settlementFee recipient address
+     * @param recipient New settlementFee recipient address
      */
-    function setSettlementFeeRecipient(address value) public onlyOwner {
-        settlementFeeRecipient = value;
+    function setSettlementFeeRecipient(address payable recipient) external onlyOwner {
+        require(recipient != address(0));
+        settlementFeeRecipient = recipient;
+    }
+
+    /**
+     * @notice Creates a new option
+     * @param period Option period in sconds (1 days <= period <= 4 weeks)
+     * @param amount Option amount
+     * @param strike Strike price of an option
+     * @return optionID Created option's ID
+     */
+    function create(
+        uint256 period,
+        uint256 amount,
+        uint256 strike
+    ) external payable returns (uint256 optionID) {
+        (uint256 total, uint256 settlementFee, , ) = fees(
+            period,
+            amount,
+            strike
+        );
+        uint256 strikeAmount = strike.mul(amount) / PRICE_DECIMALS;
+
+        require(strikeAmount > 0, "Amount is too small");
+        require(settlementFee < total, "Premium is too small");
+        require(period >= 1 days, "Period is too short");
+        require(period <= 4 weeks, "Period is too long");
+        require(msg.value == total, "Wrong value");
+
+        uint256 premium = sendPremium(total.sub(settlementFee));
+        optionID = options.length;
+        options.push(
+            Option(
+                State.Active,
+                msg.sender,
+                strike,
+                amount,
+                premium,
+                now + period
+            )
+        );
+
+        emit Create(optionID, msg.sender, settlementFee, total);
+        lockFunds(options[optionID]);
+        settlementFeeRecipient.transfer(settlementFee);
+    }
+
+    /**
+     * @notice Exercise your active option
+     * @param optionID ID of your option
+     */
+    function exercise(uint256 optionID) external {
+        Option storage option = options[optionID];
+
+        require(option.expiration >= now, "Option has expired");
+        require(option.holder == msg.sender, "Wrong msg.sender");
+        require(option.state == State.Active, "Wrong state");
+
+        option.state = State.Exercised;
+        uint256 profit = payProfit(option);
+
+        emit Exercise(optionID, profit);
+    }
+
+    /**
+     * @notice Unlock array of options
+     * @param optionIDs array of options
+     */
+    function unlockAll(uint256[] calldata optionIDs) external {
+        for (uint256 i = 0; i < optionIDs.length; i++) {
+            unlock(optionIDs[i]);
+        }
     }
 
     /**
@@ -116,88 +192,6 @@ abstract contract HegicOptions is Ownable {
     }
 
     /**
-     * @notice Creates an ATM option
-     * @param period Option period in seconds (1 days <= period <= 4 weeks)
-     * @param amount Option amount
-     * @return optionID Created option's ID
-     */
-    function createATM(uint256 period, uint256 amount)
-        public
-        payable
-        returns (uint256 optionID)
-    {
-        return create(period, amount, uint256(priceProvider.latestAnswer()));
-    }
-
-    /**
-     * @notice Creates a new option
-     * @param period Option period in sconds (1 days <= period <= 4 weeks)
-     * @param amount Option amount
-     * @param strike Strike price of an option
-     * @return optionID Created option's ID
-     */
-    function create(
-        uint256 period,
-        uint256 amount,
-        uint256 strike
-    ) public payable returns (uint256 optionID) {
-        (uint256 total, uint256 settlementFee, , ) = fees(
-            period,
-            amount,
-            strike
-        );
-        uint256 strikeAmount = strike.mul(amount) / priceDecimals;
-
-        require(strikeAmount > 0, "Amount is too small");
-        require(settlementFee < total, "Premium is too small");
-        require(period >= 1 days, "Period is too short");
-        require(period <= 4 weeks, "Period is too long");
-        require(msg.value == total, "Wrong value");
-        payable(settlementFeeRecipient).transfer(settlementFee);
-
-        uint256 premium = sendPremium(total.sub(settlementFee));
-        optionID = options.length;
-        options.push(
-            Option(
-                State.Active,
-                msg.sender,
-                strike,
-                amount,
-                premium,
-                now + period
-            )
-        );
-
-        lockFunds(options[optionID]);
-        emit Create(optionID, msg.sender, settlementFee, total);
-    }
-
-    /**
-     * @notice Exercise your active option
-     * @param optionID ID of your option
-     */
-    function exercise(uint256 optionID) public {
-        Option storage option = options[optionID];
-
-        require(option.expiration >= now, "Option has expired");
-        require(option.holder == msg.sender, "Wrong msg.sender");
-        require(option.state == State.Active, "Wrong state");
-
-        option.state = State.Exercised;
-        uint256 profit = payProfit(option);
-
-        emit Exercise(optionID, profit);
-    }
-
-    /**
-     * @notice Unlock array of options
-     * @param optionIDs array of options
-     */
-    function unlockAll(uint256[] memory optionIDs) public {
-        for (uint256 i; i < optionIDs.length; unlock(optionIDs[i++])) {}
-    }
-
-    /**
      * @notice Unlock funds locked in the expired options
      * @param optionID ID of the option
      */
@@ -220,7 +214,7 @@ abstract contract HegicOptions is Ownable {
         pure
         returns (uint256 fee)
     {
-        fee = amount / 100;
+        return amount / 100;
     }
 
     /**
@@ -230,6 +224,13 @@ abstract contract HegicOptions is Ownable {
      * @param strike Strike price of the option
      * @param currentPrice Current ETH price
      * @return fee Period fee amount
+     *
+     * amount < 1e30        |
+     * impliedVolRate < 1e10| => amount * impliedVolRate * strike < 1e60 < 2^uint256
+     * strike < 1e20 ($1T)  |
+     *
+     * in case amount * impliedVolRate * strike >= 2^256
+     * transaction will be reverted by the SafeMath
      */
     function getPeriodFee(
         uint256 amount,
@@ -238,19 +239,19 @@ abstract contract HegicOptions is Ownable {
         uint256 currentPrice
     ) internal view returns (uint256 fee) {
         if (optionType == OptionType.Put)
-            fee = amount
-                .mul(sqrt(period / 10))
+            return amount
+                .mul(sqrt(period))
                 .mul(impliedVolRate)
                 .mul(strike)
                 .div(currentPrice)
-                .div(1e8);
+                .div(PRICE_DECIMALS);
         else
-            fee = amount
-                .mul(sqrt(period / 10))
+            return amount
+                .mul(sqrt(period))
                 .mul(impliedVolRate)
                 .mul(currentPrice)
                 .div(strike)
-                .div(1e8);
+                .div(PRICE_DECIMALS);
     }
 
     /**
@@ -266,9 +267,10 @@ abstract contract HegicOptions is Ownable {
         uint256 currentPrice
     ) internal view returns (uint256 fee) {
         if (strike > currentPrice && optionType == OptionType.Put)
-            fee = (strike - currentPrice).mul(amount).div(currentPrice);
+            return strike.sub(currentPrice).mul(amount).div(currentPrice);
         if (strike < currentPrice && optionType == OptionType.Call)
-            fee = (currentPrice - strike).mul(amount).div(currentPrice);
+            return currentPrice.sub(strike).mul(amount).div(currentPrice);
+        return 0;
     }
 
     function sendPremium(uint256 amount)
@@ -276,22 +278,20 @@ abstract contract HegicOptions is Ownable {
         virtual
         returns (uint256 locked);
 
-    function lockFunds(Option memory option) internal virtual;
-
     function payProfit(Option memory option)
         internal
         virtual
         returns (uint256 amount);
 
+    function lockFunds(Option memory option) internal virtual;
     function unlockFunds(Option memory option) internal virtual;
 
-
     /**
-     * @return res Square root of the number
+     * @return result Square root of the number
      */
-    function sqrt(uint256 x) private pure returns (uint256 res) {
-        res = x;
-        uint256 z = (x + 1) / 2;
-        while (z < res) (res, z) = (z, (x / z + z) / 2);
+    function sqrt(uint256 x) private pure returns (uint256 result) {
+        result = x;
+        uint256 k = x.add(1).div(2);
+        while (k < result) (result, k) = (k, x.div(k).add(k).div(2));
     }
 }

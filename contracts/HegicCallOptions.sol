@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.6.8;
+pragma solidity 0.6.8;
 import "./HegicOptions.sol";
 
 
@@ -28,12 +28,13 @@ import "./HegicOptions.sol";
  */
 contract HegicCallOptions is HegicOptions {
     HegicETHPool public pool;
+
     /**
-     * @param priceProvider The address of ChainLink ETH/USD price feed contract
+     * @param _priceProvider The address of ChainLink ETH/USD price feed contract
      */
-    constructor(AggregatorInterface priceProvider)
+    constructor(AggregatorInterface _priceProvider)
         public
-        HegicOptions(priceProvider, HegicOptions.OptionType.Call)
+        HegicOptions(_priceProvider, HegicOptions.OptionType.Call)
     {
         pool = new HegicETHPool();
     }
@@ -41,7 +42,7 @@ contract HegicCallOptions is HegicOptions {
     /**
      * @notice Can be used to update the contract in critical situations in the first 90 days after deployment
      */
-    function transferPoolOwnership() public onlyOwner {
+    function transferPoolOwnership() external onlyOwner {
         require(now < contractCreationTimestamp + 90 days);
         pool.transferOwnership(owner());
     }
@@ -50,8 +51,8 @@ contract HegicCallOptions is HegicOptions {
      * @notice Used for changing the lockup period
      * @param value New period value
      */
-    function setLockupPeriod(uint256 value) public onlyOwner {
-        require(value <= 60 days, "LockupPeriod is too small");
+    function setLockupPeriod(uint256 value) external onlyOwner {
+        require(value <= 60 days, "Lockup period is too large");
         pool.setLockupPeriod(value);
     }
 
@@ -76,11 +77,14 @@ contract HegicCallOptions is HegicOptions {
      * @notice Sends profits in ETH from the ETH pool to a call option holder's address
      * @param option A specific option contract
      */
-    function payProfit(Option memory option) internal override returns (uint profit){
+    function payProfit(Option memory option)
+        internal
+        override
+        returns (uint profit)
+    {
         uint currentPrice = uint(priceProvider.latestAnswer());
         require(option.strike <= currentPrice, "Current price is too low");
         profit = currentPrice.sub(option.strike).mul(option.amount).div(currentPrice);
-        emit Test(profit);
         pool.send(option.holder, profit);
         unlockFunds(option);
     }

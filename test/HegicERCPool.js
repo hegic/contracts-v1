@@ -1,4 +1,4 @@
-const {getContracts, toWei, timeTravel} = require("./utils/utils.js")
+const {getContracts, toWei, timeTravel, MAX_INTEGER} = require("./utils/utils.js")
 const BN = web3.utils.BN
 
 // const firstProvide  = new BN( '1000000000000000000' )
@@ -20,7 +20,7 @@ contract("HegicERCPool", ([user1, user2, user3]) => {
     const {ERCPool, DAI} = await contracts
     await DAI.mint(firstProvide, {from: user1})
     await DAI.approve(ERCPool.address, firstProvide, {from: user1})
-    await ERCPool.provide(firstProvide, {from: user1})
+    await ERCPool.provide(firstProvide, 0, {from: user1})
     assert(firstProvide.eq(await ERCPool.shareOf(user1)), "Wrong amount")
   })
 
@@ -28,7 +28,7 @@ contract("HegicERCPool", ([user1, user2, user3]) => {
     const {ERCPool, DAI} = await contracts
     await DAI.mint(secondProvide, {from: user2})
     await DAI.approve(ERCPool.address, secondProvide, {from: user2})
-    await ERCPool.provide(secondProvide, {from: user2})
+    await ERCPool.provide(secondProvide, 0, {from: user2})
     assert(secondProvide.eq(await ERCPool.shareOf(user2)), "Wrong amount")
   })
 
@@ -69,7 +69,7 @@ contract("HegicERCPool", ([user1, user2, user3]) => {
 
     await DAI.mint(thirdProvide, {from: user3})
     await DAI.approve(ERCPool.address, thirdProvide, {from: user3})
-    await ERCPool.provide(thirdProvide, {from: user3})
+    await ERCPool.provide(thirdProvide, 0, {from: user3})
 
     assert.isAtLeast(
       await ERCPool.shareOf(user3).then((x) => x.sub(value).toNumber()),
@@ -100,7 +100,7 @@ contract("HegicERCPool", ([user1, user2, user3]) => {
     await timeTravel(14 * 24 * 3600 + 1)
     // await ERCPool.lockupPeriod().then(timeTravel)
     const gasPrice = await web3.eth.getGasPrice().then((x) => new BN(x))
-    const logs = await ERCPool.withdraw(value)
+    const logs = await ERCPool.withdraw(value, MAX_INTEGER)
     const endBalance = await DAI.balanceOf(user1)
     const balanceDelta = endBalance.sub(startBalance)
 

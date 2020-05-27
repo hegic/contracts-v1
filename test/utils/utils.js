@@ -4,6 +4,8 @@ const ERCPoolContract = artifacts.require("HegicERCPool")
 const ETHPoolContract = artifacts.require("HegicETHPool")
 const DAIContract = artifacts.require("FakeUSD")
 const PriceContract = artifacts.require("FakePriceProvider")
+const BN = web3.utils.BN
+
 
 const send = (method, params = []) =>
   new Promise((done) =>
@@ -32,4 +34,5 @@ module.exports = {
   getContracts,
   timeTravel,
   toWei: (value) => web3.utils.toWei(value.toString(), "ether"),
+  MAX_INTEGER: new BN(2).pow(new BN(256)).sub(new BN(1)),
 }

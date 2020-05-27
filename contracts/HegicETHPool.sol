@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.6.8;
+pragma solidity 0.6.8;
 import "./Interfaces.sol";
 
 
@@ -42,31 +42,13 @@ contract HegicETHPool is
      **/
     receive() external payable {}
 
-
     /**
      * @notice Used for changing the lockup period
      * @param value New period value
      */
-    function setLockupPeriod(uint256 value) public override onlyOwner {
-        require(value <= 60 days, "ImpliedVolRate limit is too small");
+    function setLockupPeriod(uint256 value) external override onlyOwner {
+        require(value <= 60 days, "Lockup period is too large");
         lockupPeriod = value;
-    }
-
-
-    /*
-     * @nonce Returns the amount of ETH available for withdrawals
-     * @return balance Unlocked amount
-     */
-    function availableBalance() public view returns (uint256 balance) {
-        balance = totalBalance().sub(lockedAmount);
-    }
-
-    /*
-     * @nonce Returns the total balance of ETH provided to the pool
-     * @return balance Pool balance
-     */
-    function totalBalance() public override view returns (uint256 balance) {
-        balance = address(this).balance.sub(lockedPremium);
     }
 
     /*
@@ -74,39 +56,20 @@ contract HegicETHPool is
      * @param minMint Minimum amount of tokens that should be received by a provider
      * @return mint Amount of tokens to be received
      */
-    function provide(uint256 minMint) public payable returns (uint256 mint) {
-        mint = provide();
-        require(mint >= minMint, "Pool: Mint limit is too large");
-    }
-
-    /*
-     * @nonce A provider supplies ETH to the pool and receives writeETH tokens
-     * @return mint Amount of tokens to be received
-     */
-    function provide() public payable returns (uint256 mint) {
+    function provide(uint256 minMint) external payable returns (uint256 mint) {
         lastProvideTimestamp[msg.sender] = now;
-        if (totalSupply().mul(totalBalance()) == 0) mint = msg.value.mul(1000);
+        if (totalSupply().mul(totalBalance()) == 0)
+            mint = msg.value.mul(1000);
         else
             mint = msg.value.mul(totalSupply()).div(
                 totalBalance().sub(msg.value)
             );
+
+        require(mint >= minMint, "Pool: Mint limit is too large");
         require(mint > 0, "Pool: Amount is too small");
-        emit Provide(msg.sender, msg.value, mint);
+
         _mint(msg.sender, mint);
-    }
-
-    /*
-     * @nonce Provider burns writeETH and receives ETH from the pool
-     * @param amount Amount of ETH to receive
-     * @param maxBurn Maximum amount of tokens that can be burned
-     * @return burn Amount of tokens to be burnt
-     */
-    function withdraw(uint256 amount, uint256 maxBurn)
-        public
-        returns (uint256 burn)
-    {
-        burn = withdraw(amount);
-        require(burn <= maxBurn, "Pool: Burn limit is too small");
+        emit Provide(msg.sender, msg.value, mint);
     }
 
     /*
@@ -114,7 +77,7 @@ contract HegicETHPool is
      * @param amount Amount of ETH to receive
      * @return burn Amount of tokens to be burnt
      */
-    function withdraw(uint256 amount) public returns (uint256 burn) {
+    function withdraw(uint256 amount, uint256 maxBurn) external returns (uint256 burn) {
         require(
             lastProvideTimestamp[msg.sender].add(lockupPeriod) <= now,
             "Pool: Withdrawal is locked up"
@@ -124,28 +87,21 @@ contract HegicETHPool is
             "Pool: Insufficient unlocked funds"
         );
         burn = amount.mul(totalSupply()).div(totalBalance());
+
+        require(burn <= maxBurn, "Pool: Burn limit is too small");
         require(burn <= balanceOf(msg.sender), "Pool: Amount is too large");
         require(burn > 0, "Pool: Amount is too small");
+
         _burn(msg.sender, burn);
         emit Withdraw(msg.sender, amount, burn);
         msg.sender.transfer(amount);
     }
 
     /*
-     * @nonce Returns provider's share in ETH
-     * @param account Provider's address
-     * @return Provider's share in ETH
-     */
-    function shareOf(address account) public view returns (uint256 share) {
-        if (totalBalance() > 0)
-            share = totalBalance().mul(balanceOf(account)).div(totalSupply());
-    }
-
-    /*
      * @nonce calls by HegicCallOptions to lock the funds
      * @param amount Amount of funds that should be locked in an option
      */
-    function lock(uint256 amount) public override onlyOwner {
+    function lock(uint256 amount) external override onlyOwner {
         require(
             lockedAmount.add(amount).mul(10).div(totalBalance()) < 8,
             "Pool: Insufficient unlocked funds"
@@ -157,7 +113,7 @@ contract HegicETHPool is
      * @nonce calls by HegicCallOptions to unlock the funds
      * @param amount Amount of funds that should be unlocked in an expired option
      */
-    function unlock(uint256 amount) public override onlyOwner {
+    function unlock(uint256 amount) external override onlyOwner {
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
         lockedAmount = lockedAmount.sub(amount);
     }
@@ -166,7 +122,7 @@ contract HegicETHPool is
      * @nonce calls by HegicPutOptions to lock the premiums
      * @param amount Amount of premiums that should be locked
      */
-    function sendPremium() public override payable onlyOwner {
+    function sendPremium() external override payable onlyOwner {
         lockedPremium = lockedPremium.add(msg.value);
     }
 
@@ -174,7 +130,7 @@ contract HegicETHPool is
      * @nonce calls by HegicPutOptions to unlock the premiums after an option's expiraton
      * @param amount Amount of premiums that should be unlocked
      */
-    function unlockPremium(uint256 amount) public override onlyOwner {
+    function unlockPremium(uint256 amount) external override onlyOwner {
         require(lockedPremium >= amount, "Pool: Insufficient locked funds");
         lockedPremium = lockedPremium.sub(amount);
     }
@@ -185,11 +141,40 @@ contract HegicETHPool is
      * @param amount Funds that should be sent
      */
     function send(address payable to, uint256 amount)
-        public
+        external
         override
         onlyOwner
     {
+        require(to != address(0));
         require(lockedAmount >= amount, "Pool: Insufficient locked funds");
         to.transfer(amount);
+    }
+
+    /*
+     * @nonce Returns provider's share in ETH
+     * @param account Provider's address
+     * @return Provider's share in ETH
+     */
+    function shareOf(address account) external view returns (uint256 share) {
+        if (totalSupply() > 0)
+            share = totalBalance().mul(balanceOf(account)).div(totalSupply());
+        else
+            share = 0;
+    }
+
+    /*
+     * @nonce Returns the amount of ETH available for withdrawals
+     * @return balance Unlocked amount
+     */
+    function availableBalance() public view returns (uint256 balance) {
+        return totalBalance().sub(lockedAmount);
+    }
+
+    /*
+     * @nonce Returns the total balance of ETH provided to the pool
+     * @return balance Pool balance
+     */
+    function totalBalance() public override view returns (uint256 balance) {
+        return address(this).balance.sub(lockedPremium);
     }
 }

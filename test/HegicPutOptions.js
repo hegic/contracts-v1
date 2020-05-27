@@ -138,7 +138,7 @@ contract("HegicPutOptions", ([user1, user2, user3]) => {
     const amount = toWei(1e7)
     await DAI.mint(amount, {from: user3})
     await DAI.approve(ERCPool.address, amount, {from: user3})
-    await ERCPool.provide(amount, {from: user3})
+    await ERCPool.provide(amount, 0, {from: user3})
   })
 
   it("Should create an option", async () => {
@@ -352,6 +352,12 @@ contract("HegicPutOptions", ([user1, user2, user3]) => {
         exercisePrice: new BN(200e8).mul(new BN(testPoint)).div(new BN(100)),
       }))
 
+  it("Shouldn't pay profit for exercised option when price is increased", () =>
+    testOption({
+    createPrice: new BN(200e8),
+    exercisePrice: new BN(200e8 + 1),
+  }))
+  
   for (const testPoint of [190, 195, 200, 205, 210])
     it(`Show price for $${testPoint} strike`, () =>
       testOption({
@@ -359,12 +365,6 @@ contract("HegicPutOptions", ([user1, user2, user3]) => {
         strike: new BN(testPoint).mul(new BN(1e8)),
         exercisePrice: new BN(190e8),
       }))
-
-  it("Shouldn't pay profit for exercised option when price is increased", () =>
-    testOption({
-      createPrice: new BN(200e8),
-      exercisePrice: new BN(200e8 + 1),
-    }))
 
   it("Should withdraw funds from the pool", async () => {
     const {ERCPool} = await contracts

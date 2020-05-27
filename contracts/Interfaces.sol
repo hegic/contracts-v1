@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.6.8;
+pragma solidity 0.6.8;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.6/dev/AggregatorInterface.sol";
@@ -30,26 +30,20 @@ interface ILiquidityPool {
         uint256 amount,
         uint256 writeAmount
     );
+
     event Provide(address indexed account, uint256 amount, uint256 writeAmount);
-
-    function totalBalance() external view returns (uint256 amount);
-
     function lock(uint256 amount) external;
-
     function unlock(uint256 amount) external;
-
     function unlockPremium(uint256 amount) external;
-
     function send(address payable account, uint256 amount) external;
-
     function setLockupPeriod(uint value) external;
+    function totalBalance() external view returns (uint256 amount);
 }
 
 
 interface IERCLiquidityPool is ILiquidityPool {
-    function token() external view returns (IERC20);
-
     function sendPremium(uint256 amount) external;
+    function token() external view returns (IERC20);
 }
 
 
@@ -58,29 +52,22 @@ interface IETHLiquidityPool is ILiquidityPool {
 }
 
 
-interface ERC20Incorrect {
-    // for the future
-    function balanceOf(address who) external view returns (uint256);
-
-    function transfer(address to, uint256 value) external;
-
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
-
-    function transferFrom(
-        address from,
-        address to,
-        uint256 value
-    ) external;
-
-    function approve(address spender, uint256 value) external;
-
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
-    event Transfer(address indexed from, address indexed to, uint256 value);
-}
+// for the future
+// interface ERC20Incorrect {
+//     event Transfer(address indexed from, address indexed to, uint256 value);
+//
+//     event Approval(address indexed owner, address indexed spender, uint256 value);
+//
+//     function transfer(address to, uint256 value) external;
+//
+//     function transferFrom(
+//         address from,
+//         address to,
+//         uint256 value
+//     ) external;
+//
+//     function approve(address spender, uint256 value) external;
+//     function balanceOf(address who) external view returns (uint256);
+//     function allowance(address owner, address spender) external view returns (uint256);
+//
+// }
