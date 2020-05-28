@@ -86,7 +86,7 @@ contract HegicETHPool is
         );
         require(
             amount <= availableBalance(),
-            "Pool: Insufficient unlocked funds"
+            "Pool Error: Not enough funds on the pool contract. Please lower the amount."
         );
         burn = amount.mul(totalSupply()).div(totalBalance());
 
@@ -106,7 +106,7 @@ contract HegicETHPool is
     function lock(uint256 amount) external override onlyOwner {
         require(
             lockedAmount.add(amount).mul(10).div(totalBalance()) < 8,
-            "Pool: Insufficient unlocked funds"
+            "Pool Error: You are trying to unlock more funds than have been locked for your contract. Please lower the amount."
         );
         lockedAmount = lockedAmount.add(amount);
     }
@@ -116,7 +116,7 @@ contract HegicETHPool is
      * @param amount Amount of funds that should be unlocked in an expired option
      */
     function unlock(uint256 amount) external override onlyOwner {
-        require(lockedAmount >= amount, "Pool: Insufficient locked funds");
+        require(lockedAmount >= amount, "Pool Error: You are trying to unlock more funds than have been locked for your contract. Please lower the amount.");
         lockedAmount = lockedAmount.sub(amount);
     }
 
@@ -133,7 +133,7 @@ contract HegicETHPool is
      * @param amount Amount of premiums that should be unlocked
      */
     function unlockPremium(uint256 amount) external override onlyOwner {
-        require(lockedPremium >= amount, "Pool: Insufficient locked funds");
+        require(lockedPremium >= amount, "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount.");
         lockedPremium = lockedPremium.sub(amount);
     }
 
@@ -148,7 +148,7 @@ contract HegicETHPool is
         onlyOwner
     {
         require(to != address(0));
-        require(lockedAmount >= amount, "Pool: Insufficient locked funds");
+        require(lockedAmount >= amount, "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount.");
         to.transfer(amount);
     }
 
