@@ -53,7 +53,9 @@ contract HegicETHPool is
 
     /*
      * @nonce A provider supplies ETH to the pool and receives writeETH tokens
-     * @param minMint Minimum amount of tokens that should be received by a provider
+     * @param minMint Minimum amount of tokens that should be received by a provider. 
+                      Calling the provide function will require the minimum amount of tokens to be minted.
+                      The actual amount that will be minted could vary but can only be higher (not lower) than the minimum value.
      * @return mint Amount of tokens to be received
      */
     function provide(uint256 minMint) external payable returns (uint256 mint) {
