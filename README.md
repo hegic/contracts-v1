@@ -46,6 +46,19 @@ ETH Put Options are created and exercised via **HegicPutOptions** and **HegicERC
 
 **Hegic Protocol V1 has not been audited yet. You can lose up to 100% of your funds that you provide to the liquidity pools contracts. There is a technical risk that the Hegic Protocol V1 contracts can be hacked in the future. Never provide more funds to the liquidity pools contracts than you can afford to lose. Always DYOR.**
 
+**[Added on 28.05.2020] ATTENTION! PLEASE READ THIS! During the first 90 days after the V1.1 contracts deployment (these contracts are not deployed yet) the owner address will be a highly privileged account. It means that the contracts will be under the owner's control. After 90 days from the `contractCreationTimestamp` time, these priviledges will be lost forever and the contracts owner will only be able to use `setLockupPeriod` (LockupPeriod value can only be <60 days), `setImpliedVolRate`, `setMaxSpread` functions of the contracts.**
+
+See below: 
+
+    /**
+     * @notice Can be used to update the contract in critical situations
+     *         in the first 90 days after deployment
+     */
+    function transferPoolOwnership() external onlyOwner {
+        require(now < contractCreationTimestamp + 90 days);
+        pool.transferOwnership(owner());
+    }
+
 ## Contracts
 
 | Contract                                                                                               | Description        | Mainnet Address                                                                                                       |
@@ -60,21 +73,23 @@ ETH Put Options are created and exercised via **HegicPutOptions** and **HegicERC
 
 Hegic Protocol V1 contracts admin key holder CAN:
 
+- call `setLockupPeriod` function to change the lock-up period for liquidity providers (can only be <60 days)
+
 - call `setImpliedVolRate` function to change the Implied Volatility proxy that influences the `fees`
 
 - call `setMaxSpread` function to change the maximum spread for the swap on the Uniswap Protocol
 
 **Hegic Protocol V1 contracts admin key holder CAN'T:**
 
-- call `withdraw` function (can't withdraw users' funds from the pools contracts)
+- can't withdraw users' funds from the pools contracts using the `withdraw` function
 
-- call `lock` function (can't lock funds on the liquidity pools contracts)
+- can't lock users' funds on the liquidity pools contracts calling the call `lock` function
 
-- call `unlock` function (can't unlock funds on unexercised active contracts)
+- can't unlock users' funds on unexercised active contracts calling the `unlock` function
 
-- call `transfer` function (can't send users' writeETH / writeERC tokens)
+- can't send users' writeETH / writeERC tokens calling the `transfer` function
 
-- call `exercise` function (can't exercise users' active options contracts)
+- can't exercise users' active options contracts calling the `exercise` function
 
 ## Documents
 
