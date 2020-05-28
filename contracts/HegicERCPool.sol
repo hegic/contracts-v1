@@ -121,10 +121,12 @@ contract HegicERCPool is
      */
     function provide(uint256 amount, uint256 minMint) external returns (uint256 mint) {
         lastProvideTimestamp[msg.sender] = now;
-        if (totalSupply().mul(totalBalance()) == 0)
-            mint = amount.mul(1000);
+        uint supply = totalSupply();
+        uint balance = totalBalance();
+        if (supply > 0 && balance > 0)
+            mint = amount.mul(supply).div(balance);
         else
-            mint = amount.mul(totalSupply()).div(totalBalance());
+            mint = amount.mul(1000);
 
         require(mint >= minMint, "Pool: Mint limit is too large");
         require(mint > 0, "Pool: Amount is too small");
@@ -169,8 +171,9 @@ contract HegicERCPool is
      * @return Provider's share in DAI
      */
     function shareOf(address user) external view returns (uint256 share) {
-        if (totalSupply() > 0)
-            share = totalBalance().mul(balanceOf(user)).div(totalSupply());
+        uint supply = totalSupply();
+        if (supply > 0)
+            share = totalBalance().mul(balanceOf(user)).div(supply);
         else
             share = 0;
     }

@@ -155,7 +155,8 @@ contract HegicOptions is Ownable {
      * @param optionIDs array of options
      */
     function unlockAll(uint256[] calldata optionIDs) external {
-        for (uint256 i = 0; i < optionIDs.length; i++) {
+        uint arrayLength = optionIDs.length;
+        for (uint256 i = 0; i < arrayLength; i++) {
             unlock(optionIDs[i]);
         }
     }

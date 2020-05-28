@@ -60,12 +60,12 @@ contract HegicETHPool is
      */
     function provide(uint256 minMint) external payable returns (uint256 mint) {
         lastProvideTimestamp[msg.sender] = now;
-        if (totalSupply().mul(totalBalance()) == 0)
-            mint = msg.value.mul(1000);
+        uint supply = totalSupply();
+        uint balance = totalBalance();
+        if (supply > 0 && balance > 0)
+            mint = msg.value.mul(supply).div(balance.sub(msg.value));
         else
-            mint = msg.value.mul(totalSupply()).div(
-                totalBalance().sub(msg.value)
-            );
+            mint = msg.value.mul(1000);
 
         require(mint >= minMint, "Pool: Mint limit is too large");
         require(mint > 0, "Pool: Amount is too small");
