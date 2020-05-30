@@ -1,8 +1,6 @@
-# Hegic Protocol V1
+# Hegic Protocol V1.1
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Discord](https://img.shields.io/discord/679629806043660298?color=768AD4&label=Discord&logo=discord&logoColor=768AD4)](https://discordapp.com/channels/679629806043660298/) [![Telegram](https://img.shields.io/badge/chat-on%20Telegram-9cf.svg)](https://t.me/HegicOptions) [![Twitter Follow](https://img.shields.io/twitter/follow/HegicOptions?style=social)](https://twitter.com/HegicOptions)
-
-![alt text](https://i.imgur.com/7zMA5pp.png)
 
 [Hegic](https://www.hegic.co) is an on-chain options trading protocol on [Ethereum](https://github.com/ethereum).
 
@@ -25,6 +23,8 @@ The core of the Hegic Protocol V1 is a system of [Solidity smart contracts](http
 An option is a contract giving the buyer _the right, but not the obligation_, to buy (in the case of a call option contract) or sell (in the case of a put option contract) the underlying asset _at a specific price on or before a certain date_. Traders can use on-chain options for speculation or to hedge their positions. Options are known as _derivatives_ because they derive their value from an underlying asset. Learn more about options and Hegic Protocol on [GitBook](https://hegic.gitbook.io/start/).
 
 ## How Hegic Protocol V1 Works
+
+![alt text](https://i.imgur.com/m1Soox3.png) ![alt text](https://i.imgur.com/Zwq9Gwx.png)
 
 HegicCallOptions and HegicPutOptions are options contracts. These contracts calculate `fees` (options prices), `create` new options, `exercise` options contracts on behalf of the holders and `exchange` holders' assets using [the Uniswap Protocol](https://github.com/Uniswap) for sending liquidity back to the pool during the process of exercising.
 
