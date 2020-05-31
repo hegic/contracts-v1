@@ -92,9 +92,9 @@ contract HegicOptions is Ownable {
 
     /**
      * @notice Creates a new option
-     * @param period Option period in sconds (1 days <= period <= 4 weeks)
+     * @param period Option period in seconds (1 days <= period <= 4 weeks)
      * @param amount Option amount
-     * @param strike Strike price of an option
+     * @param strike Strike price of the option
      * @return optionID Created option's ID
      */
     function create(
@@ -134,7 +134,7 @@ contract HegicOptions is Ownable {
     }
 
     /**
-     * @notice Exercise your active option
+     * @notice Exercises an active option
      * @param optionID ID of your option
      */
     function exercise(uint256 optionID) external {
@@ -151,7 +151,7 @@ contract HegicOptions is Ownable {
     }
 
     /**
-     * @notice Unlock array of options
+     * @notice Unlocks an array of options
      * @param optionIDs array of options
      */
     function unlockAll(uint256[] calldata optionIDs) external {
@@ -165,11 +165,11 @@ contract HegicOptions is Ownable {
      * @notice Used for getting the actual options prices
      * @param period Option period in seconds (1 days <= period <= 4 weeks)
      * @param amount Option amount
-     * @param strike Strike price of an option
+     * @param strike Strike price of the option
      * @return total Total price to be paid
      * @return settlementFee Amount to be distributed to the HEGIC token holders
      * @return strikeFee Amount that covers the price difference in the ITM options
-     * @return periodFee Option period fee
+     * @return periodFee Option period fee amount
      */
     function fees(
         uint256 period,
@@ -208,7 +208,7 @@ contract HegicOptions is Ownable {
     /**
      * @notice Calculates settlementFee
      * @param amount Option amount
-     * @return fee Settlment fee amount
+     * @return fee Settlement fee amount
      */
     function getSettlementFee(uint256 amount)
         internal
@@ -223,7 +223,7 @@ contract HegicOptions is Ownable {
      * @param amount Option amount
      * @param period Option period in seconds (1 days <= period <= 4 weeks)
      * @param strike Strike price of the option
-     * @param currentPrice Current ETH price
+     * @param currentPrice Current price of ETH
      * @return fee Period fee amount
      *
      * amount < 1e30        |
@@ -258,7 +258,7 @@ contract HegicOptions is Ownable {
     /**
      * @notice Calculates strikeFee
      * @param amount Option amount
-     * @param strike Strike price of an option
+     * @param strike Strike price of the option
      * @param currentPrice Current price of ETH
      * @return fee Strike fee amount
      */
