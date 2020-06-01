@@ -53,7 +53,7 @@ contract HegicETHPool is
 
     /*
      * @nonce A provider supplies ETH to the pool and receives writeETH tokens
-     * @param minMint Minimum amount of tokens that should be received by a provider. 
+     * @param minMint Minimum amount of tokens that should be received by a provider.
                       Calling the provide function will require the minimum amount of tokens to be minted.
                       The actual amount that will be minted could vary but can only be higher (not lower) than the minimum value.
      * @return mint Amount of tokens to be received
@@ -178,5 +178,12 @@ contract HegicETHPool is
      */
     function totalBalance() public override view returns (uint256 balance) {
         return address(this).balance.sub(lockedPremium);
+    }
+
+    function _beforeTokenTransfer(address from, address, uint256) internal override {
+        require(
+            lastProvideTimestamp[from].add(lockupPeriod) <= now,
+            "Pool: Withdrawal is locked up"
+        );
     }
 }

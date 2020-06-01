@@ -10,20 +10,20 @@
     "ganache": "ganache-cli",
     "test": "truffle test",
     "lint": "prettier './**/*.js' './**/*.sol' './**/*.md' --write",
-    "flat": "truffle-flattener test/Import.flat >> build/flat.sol"
+    "flat": "truffle-flattener test/Import.flat > build/flat.sol"
   },
   "author": "",
   "license": "GPLv3",
   "devDependencies": {
     "@openzeppelin/test-environment": "^0.1.4",
-    "@truffle/debug-utils": "^4.1.4",
+    "@truffle/debug-utils": "^4.1.5",
     "@truffle/hdwallet-provider": "^1.0.35",
     "chai": "^4.2.0",
     "ganache-cli": "^6.9.1",
     "mocha": "^7.2.0",
     "prettier": "^2.0.5",
-    "prettier-plugin-solidity": "^1.0.0-alpha.52",
-    "truffle": "^5.1.27",
+    "prettier-plugin-solidity": "^1.0.0-alpha.53",
+    "truffle": "^5.1.28",
     "truffle-flattener": "^1.4.4"
   },
   "dependencies": {

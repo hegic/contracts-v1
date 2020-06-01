@@ -25,9 +25,9 @@ module.exports = async function (deployer, network) {
     } else if (network == "main") {
       const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
       const ChainLink = "0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F"
-      const Uniswap = "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95"
-      await deployer.deploy(PutHedge, DAI, ChainLink, Uniswap)
-      await deployer.deploy(CallHedge, DAI, ChainLink, Uniswap)
+      const Uniswap = "0xf164fC0Ec4E93095b804a4795bBe1e041497b92a"
+      // await deployer.deploy(PutHedge, DAI, ChainLink, Uniswap)
+      await deployer.deploy(CallHedge, ChainLink)
     } else if (network == "ropsten") {
       // await deployer.deploy(StableCoin)
       var DAI = "0x2fD2Db40bcb5740808E59Ff2458bf34928bbc552"

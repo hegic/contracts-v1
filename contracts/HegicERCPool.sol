@@ -114,7 +114,7 @@ contract HegicERCPool is
     /*
      * @nonce A provider supplies DAI to the pool and receives writeDAI tokens
      * @param amount Provided tokens
-     * @param minMint Minimum amount of tokens that should be received by a provider. 
+     * @param minMint Minimum amount of tokens that should be received by a provider.
                       Calling the provide function will require the minimum amount of tokens to be minted.
                       The actual amount that will be minted could vary but can only be higher (not lower) than the minimum value.
      * @return mint Amount of tokens to be received
@@ -192,5 +192,12 @@ contract HegicERCPool is
      */
     function totalBalance() public override view returns (uint256 balance) {
         return token.balanceOf(address(this)).sub(lockedPremium);
+    }
+
+    function _beforeTokenTransfer(address from, address, uint256) internal override {
+        require(
+            lastProvideTimestamp[from].add(lockupPeriod) <= now,
+            "Pool: Withdrawal is locked up"
+        );
     }
 }

@@ -38,6 +38,7 @@ module.exports = {
       provider: () =>
         new HDWalletProvider(pk, `https://mainnet.infura.io/v3/${infuraKey}`),
       network_id: 1, // Ropsten's id
+      gasPrice: 33000000000,
       // gas: 7000000,        // Ropsten has a lower block limit than mainnet
       // confirmations: 1,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200, // # of blocks before a deployment times out  (minimum/default: 50)

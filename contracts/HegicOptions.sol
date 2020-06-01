@@ -68,7 +68,7 @@ contract HegicOptions is Ownable {
         priceProvider = pp;
         optionType = _type;
         settlementFeeRecipient = payable(owner());
-        impliedVolRate = 6500;
+        impliedVolRate = 5500;
         contractCreationTimestamp = now;
     }
 
