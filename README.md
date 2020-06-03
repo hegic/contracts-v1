@@ -69,10 +69,10 @@ See below:
 
 | Contract                                                                                               | Description        | Mainnet Address                                                                                                       |
 | ------------------------------------------------------------------------------------------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| [`HegicCallOptions`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicCallOptions.sol) | ETH Call Options   | [0xd63D914B691bB250392Ba68f291a94939fe2dC53](https://etherscan.io/address/0xd63D914B691bB250392Ba68f291a94939fe2dC53) |
-| [`HegicPutOptions`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicPutOptions.sol)   | ETH Put Options    | [0x3bD72BBb3262818Ae94fc30De674213961cf2a26](https://etherscan.io/address/0x3bD72BBb3262818Ae94fc30De674213961cf2a26) |
-| [`HegicETHPool`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicETHPool.sol)         | ETH Liquidity Pool | [0x226E696a0434D5e24e0E1e432FF8cd01d7A1e282](https://etherscan.io/address/0x226E696a0434D5e24e0E1e432FF8cd01d7A1e282) |
-| [`HegicERCPool`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicERCPool.sol)         | ERC Liquidity Pool | [0x9f7E7d22E9F07b93C4A1961d1425a320322BB0ae](https://etherscan.io/address/0x9f7E7d22E9F07b93C4A1961d1425a320322BB0ae) |
+| [`HegicCallOptions`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicCallOptions.sol) | ETH Call Options   | [0x0B660D66b05a743Df3755058c2e63d5a5f2bA2F7](https://etherscan.io/address/0x0B660D66b05a743Df3755058c2e63d5a5f2bA2F7) |
+| [`HegicPutOptions`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicPutOptions.sol)   | ETH Put Options    | [0xD45cC8321e3015608cFb2D51668FFE03db80f3BE](https://etherscan.io/address/0xD45cC8321e3015608cFb2D51668FFE03db80f3BE) |
+| [`HegicETHPool`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicETHPool.sol)         | ETH Liquidity Pool | [0xaDA5688293dE408A9fA4cB708F9003D140BD99cb](https://etherscan.io/address/0xaDA5688293dE408A9fA4cB708F9003D140BD99cb) |
+| [`HegicERCPool`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicERCPool.sol)         | ERC Liquidity Pool | [0xD5a596d0E46Ae92D77B6c8b63848b02baDA3D7bA](https://etherscan.io/address/0xD5a596d0E46Ae92D77B6c8b63848b02baDA3D7bA) |
 | `Aggregator`                                                                                           | ETH/USD Price Feed | [0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F](https://etherscan.io/address/0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F) |
 
 ## Admin Key
