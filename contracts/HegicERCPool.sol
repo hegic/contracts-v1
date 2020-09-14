@@ -20,7 +20,6 @@
 pragma solidity 0.6.8;
 import "./Interfaces.sol";
 
-
 /**
  * @author 0mllwntrmt3
  * @title Hegic DAI Liquidity Pool
@@ -71,7 +70,10 @@ contract HegicERCPool is
      * @param amount Amount of funds that should be unlocked in an expired option
      */
     function unlock(uint256 amount) external override onlyOwner {
-        require(lockedAmount >= amount, "Pool Error: You are trying to unlock more funds than have been locked for your contract. Please lower the amount.");
+        require(
+            lockedAmount >= amount,
+            "Pool Error: You are trying to unlock more funds than have been locked for your contract. Please lower the amount."
+        );
         lockedAmount = lockedAmount.sub(amount);
     }
 
@@ -92,7 +94,10 @@ contract HegicERCPool is
      * @param amount Amount of premiums that should be locked
      */
     function unlockPremium(uint256 amount) external override onlyOwner {
-        require(lockedPremium >= amount, "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount.");
+        require(
+            lockedPremium >= amount,
+            "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount."
+        );
         lockedPremium = lockedPremium.sub(amount);
     }
 
@@ -107,8 +112,14 @@ contract HegicERCPool is
         onlyOwner
     {
         require(to != address(0));
-        require(lockedAmount >= amount, "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount.");
-        require(token.transfer(to, amount), "Token transfer error: Please lower the amount of premiums that you want to send.");
+        require(
+            lockedAmount >= amount,
+            "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount."
+        );
+        require(
+            token.transfer(to, amount),
+            "Token transfer error: Please lower the amount of premiums that you want to send."
+        );
     }
 
     /*
@@ -119,14 +130,15 @@ contract HegicERCPool is
                       The actual amount that will be minted could vary but can only be higher (not lower) than the minimum value.
      * @return mint Amount of tokens to be received
      */
-    function provide(uint256 amount, uint256 minMint) external returns (uint256 mint) {
+    function provide(uint256 amount, uint256 minMint)
+        external
+        returns (uint256 mint)
+    {
         lastProvideTimestamp[msg.sender] = now;
-        uint supply = totalSupply();
-        uint balance = totalBalance();
-        if (supply > 0 && balance > 0)
-            mint = amount.mul(supply).div(balance);
-        else
-            mint = amount.mul(1000);
+        uint256 supply = totalSupply();
+        uint256 balance = totalBalance();
+        if (supply > 0 && balance > 0) mint = amount.mul(supply).div(balance);
+        else mint = amount.mul(1000);
 
         require(mint >= minMint, "Pool: Mint limit is too large");
         require(mint > 0, "Pool: Amount is too small");
@@ -145,7 +157,10 @@ contract HegicERCPool is
      * @param maxBurn Maximum amount of tokens that can be burned
      * @return mint Amount of tokens to be burnt
      */
-    function withdraw(uint256 amount, uint256 maxBurn) external returns (uint256 burn) {
+    function withdraw(uint256 amount, uint256 maxBurn)
+        external
+        returns (uint256 burn)
+    {
         require(
             lastProvideTimestamp[msg.sender].add(lockupPeriod) <= now,
             "Pool: Withdrawal is locked up"
@@ -171,11 +186,9 @@ contract HegicERCPool is
      * @return Provider's share in DAI
      */
     function shareOf(address user) external view returns (uint256 share) {
-        uint supply = totalSupply();
-        if (supply > 0)
-            share = totalBalance().mul(balanceOf(user)).div(supply);
-        else
-            share = 0;
+        uint256 supply = totalSupply();
+        if (supply > 0) share = totalBalance().mul(balanceOf(user)).div(supply);
+        else share = 0;
     }
 
     /*
@@ -194,7 +207,11 @@ contract HegicERCPool is
         return token.balanceOf(address(this)).sub(lockedPremium);
     }
 
-    function _beforeTokenTransfer(address from, address, uint256) internal override {
+    function _beforeTokenTransfer(
+        address from,
+        address,
+        uint256
+    ) internal override {
         require(
             lastProvideTimestamp[from].add(lockupPeriod) <= now,
             "Pool: Withdrawal is locked up"

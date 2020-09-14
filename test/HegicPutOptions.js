@@ -354,10 +354,10 @@ contract("HegicPutOptions", ([user1, user2, user3]) => {
 
   it("Shouldn't pay profit for exercised option when price is increased", () =>
     testOption({
-    createPrice: new BN(200e8),
-    exercisePrice: new BN(200e8 + 1),
-  }))
-  
+      createPrice: new BN(200e8),
+      exercisePrice: new BN(200e8 + 1),
+    }))
+
   for (const testPoint of [190, 195, 200, 205, 210])
     it(`Show price for $${testPoint} strike`, () =>
       testOption({
@@ -371,7 +371,9 @@ contract("HegicPutOptions", ([user1, user2, user3]) => {
     const value = await ERCPool.availableBalance()
     await timeTravel(14 * 24 * 3600 + 1)
     // await ERCPool.lockupPeriod().then(timeTravel)
-    await ERCPool.withdraw(value, "100000000000000000000000000000000", {from: user3})
+    await ERCPool.withdraw(value, "100000000000000000000000000000000", {
+      from: user3,
+    })
   })
 
   it("Should print prices", () => {
