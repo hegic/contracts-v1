@@ -1,0 +1,35 @@
+on: [push, pull_request]
+
+name: main workflow
+
+jobs:
+
+  tests:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Read node version from `.nvmrc` file
+    - id: nvmrc
+      uses: browniebroke/read-nvmrc-action@v1
+
+    - uses: actions/setup-node@v1
+      with:
+        # use the output from the action
+        node-version: '${{ steps.nvmrc.outputs.node_version }}'
+
+    - name: Install deps
+      run: npm install
+
+    - name: Run Compile
+      run: npm run compile
+
+    - name: Run Contract size check
+      run: npm run contract-size
+
+    - name: Run Lint
+      run: npm run lint-check
+
+    - name: Run Tests
+      run: npm run test

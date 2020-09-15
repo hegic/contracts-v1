@@ -61,4 +61,5 @@ module.exports = {
       },
     },
   },
+  plugins: ["truffle-ganache-test", "truffle-contract-size"],
 }
