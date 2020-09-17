@@ -17,7 +17,7 @@ The core of the Hegic Protocol V1.1 is a system of [Solidity smart contracts](ht
 - [Admin Key](#admin-key)
 - [Documents](#documents)
 - [Maintainer](#maintainer)
-- [Acknolwedgements](#acknolwedgements)
+- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ## What are Options
@@ -34,7 +34,7 @@ An option is a contract giving the buyer _the right, but not the obligation_, to
 
 HegicCallOptions and HegicPutOptions are options contracts. These contracts calculate `fees` (options prices), `create` new options, `exercise` options contracts on behalf of the holders and `exchange` holders' assets using [the Uniswap Protocol](https://github.com/Uniswap) for sending liquidity back to the pool during the process of exercising.
 
-HegicETHPool and HegicERCPool are liquidity pools contracts. These non-custodial contracts accumulate liquidity from providers (writers). Pooled liquidity is used for selling (writing) options contracts to the buyers (holders). After a liquidity provider calls the `provide` method, they send ETH / [ERC-20 tokens](https://eips.ethereum.org/EIPS/eip-20) to the liquidity pool contract and receive writeETH / writeERC (ERC-20) tokens to their address. To leave the pool a liqudity provider calls the `withdraw` method, burns their writeETH / writeERC tokens and receives ETH / ERC-20 tokens to their address.
+HegicETHPool and HegicERCPool are liquidity pools contracts. These non-custodial contracts accumulate liquidity from providers (writers). Pooled liquidity is used for selling (writing) options contracts to the buyers (holders). After a liquidity provider calls the `provide` method, they send ETH / [ERC-20 tokens](https://eips.ethereum.org/EIPS/eip-20) to the liquidity pool contract and receive writeETH / writeERC (ERC-20) tokens to their address. To leave the pool a liquidity provider calls the `withdraw` method, burns their writeETH / writeERC tokens and receives ETH / ERC-20 tokens to their address.
 
 ---
 
@@ -52,7 +52,7 @@ ETH Put Options are created and exercised via **HegicPutOptions** and **HegicERC
 
 **Hegic Protocol V1.1 contracts have been audited by Bramah Systems: https://bramah.systems/audits/Hegic_Audit_Bramah.pdf. However, your funds are at risk. You can lose up to 100% of the amount that you will provide to the liquidity pools contracts. There is a technical risk that the Hegic Protocol V1.1 contracts can be hacked in the future. Never provide funds to the liquidity pools contracts than you can't afford to lose. Always do your own research.**
 
-**[Added on 28.05.2020. Fixed on 31/05/2020] ATTENTION! PLEASE READ THIS! During the first 90 days after the V1.1 contracts deployment (deployed on 30/05/2020) the owner address will be a highly privileged account. It means that the contracts will be under the owner's control. After 90 days from the `contractCreationTimestamp` time, these priviledges will be lost forever and the contracts owner will only be able to use `setLockupPeriod` (LockupPeriod value can only be <60 days), `setImpliedVolRate`, `setMaxSpread` functions of the contracts.**
+**[Added on 28.05.2020. Fixed on 31/05/2020] ATTENTION! PLEASE READ THIS! During the first 90 days after the V1.1 contracts deployment (deployed on 30/05/2020) the owner address will be a highly privileged account. It means that the contracts will be under the owner's control. After 90 days from the `contractCreationTimestamp` time, these privileges will be lost forever and the contracts owner will only be able to use `setLockupPeriod` (LockupPeriod value can only be <60 days), `setImpliedVolRate`, `setMaxSpread` functions of the contracts.**
 
 See below: 
 
@@ -107,7 +107,7 @@ Hegic Protocol V1.1 contracts admin key holder CAN:
 
 [Molly Wintermute](https://github.com/0mllwntrmt3). Contact: molly.wintermute@protonmail.com | https://keybase.io/mollywintermute
 
-## Acknolwedgements
+## Acknowledgements
 
 [Sam Sun](https://github.com/samczsun), [Lev Livnev](https://github.com/livnev), [Dan Elitzer](https://github.com/delitzer), [Jon Itzler](https://github.com/itzler) helped make Hegic Protocol V1.1 better. Thank you.
 
