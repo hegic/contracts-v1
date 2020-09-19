@@ -26,7 +26,7 @@ An option is a contract giving the buyer _the right, but not the obligation_, to
 
 ## How Hegic Protocol V1.1 Works
 
-![alt text](https://i.imgur.com/m1Soox3.png) 
+![alt text](https://i.imgur.com/m1Soox3.png)
 
 ---
 
@@ -54,7 +54,7 @@ ETH Put Options are created and exercised via **HegicPutOptions** and **HegicERC
 
 **[Added on 28.05.2020. Fixed on 31/05/2020] ATTENTION! PLEASE READ THIS! During the first 90 days after the V1.1 contracts deployment (deployed on 30/05/2020) the owner address will be a highly privileged account. It means that the contracts will be under the owner's control. After 90 days from the `contractCreationTimestamp` time, these priviledges will be lost forever and the contracts owner will only be able to use `setLockupPeriod` (LockupPeriod value can only be <60 days), `setImpliedVolRate`, `setMaxSpread` functions of the contracts.**
 
-See below: 
+See below:
 
     /**
      * @notice Can be used to update the contract in critical situations
@@ -73,7 +73,7 @@ See below:
 | [`HegicPutOptions`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicPutOptions.sol)   | ETH Put Options    | [0xD45cC8321e3015608cFb2D51668FFE03db80f3BE](https://etherscan.io/address/0xD45cC8321e3015608cFb2D51668FFE03db80f3BE) |
 | [`HegicETHPool`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicETHPool.sol)         | ETH Liquidity Pool | [0xaDA5688293dE408A9fA4cB708F9003D140BD99cb](https://etherscan.io/address/0xaDA5688293dE408A9fA4cB708F9003D140BD99cb) |
 | [`HegicERCPool`](https://github.com/hegic/contracts-v1/blob/master/contracts/HegicERCPool.sol)         | ERC Liquidity Pool | [0xD5a596d0E46Ae92D77B6c8b63848b02baDA3D7bA](https://etherscan.io/address/0xD5a596d0E46Ae92D77B6c8b63848b02baDA3D7bA) |
-| `Aggregator`                                                                                           | ETH/USD Price Feed | [0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F](https://etherscan.io/address/0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F) |
+| `Aggregator`                                                                                           | ETH/USD Price Feed | [0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419](https://etherscan.io/address/0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419) |
 
 ## Admin Key
 

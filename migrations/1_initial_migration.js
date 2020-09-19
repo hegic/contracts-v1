@@ -24,7 +24,7 @@ module.exports = async function (deployer, network) {
       await deployer.deploy(CallHedge, PriceProvider.address)
     } else if (network == "main") {
       const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
-      const ChainLink = "0xF79D6aFBb6dA890132F9D7c355e3015f15F3406F"
+      const ChainLink = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
       const Uniswap = "0xf164fC0Ec4E93095b804a4795bBe1e041497b92a"
       // await deployer.deploy(PutHedge, DAI, ChainLink, Uniswap)
       await deployer.deploy(CallHedge, ChainLink)
