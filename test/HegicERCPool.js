@@ -1,4 +1,9 @@
-const {getContracts, toWei, timeTravel, MAX_INTEGER} = require("./utils/utils.js")
+const {
+  getContracts,
+  toWei,
+  timeTravel,
+  MAX_INTEGER,
+} = require("./utils/utils.js")
 const BN = web3.utils.BN
 
 // const firstProvide  = new BN( '1000000000000000000' )

@@ -20,7 +20,6 @@
 pragma solidity 0.6.8;
 import "./Interfaces.sol";
 
-
 /**
  * @author 0mllwntrmt3
  * @title Hegic ETH Liquidity Pool
@@ -60,12 +59,11 @@ contract HegicETHPool is
      */
     function provide(uint256 minMint) external payable returns (uint256 mint) {
         lastProvideTimestamp[msg.sender] = now;
-        uint supply = totalSupply();
-        uint balance = totalBalance();
+        uint256 supply = totalSupply();
+        uint256 balance = totalBalance();
         if (supply > 0 && balance > 0)
             mint = msg.value.mul(supply).div(balance.sub(msg.value));
-        else
-            mint = msg.value.mul(1000);
+        else mint = msg.value.mul(1000);
 
         require(mint >= minMint, "Pool: Mint limit is too large");
         require(mint > 0, "Pool: Amount is too small");
@@ -79,7 +77,10 @@ contract HegicETHPool is
      * @param amount Amount of ETH to receive
      * @return burn Amount of tokens to be burnt
      */
-    function withdraw(uint256 amount, uint256 maxBurn) external returns (uint256 burn) {
+    function withdraw(uint256 amount, uint256 maxBurn)
+        external
+        returns (uint256 burn)
+    {
         require(
             lastProvideTimestamp[msg.sender].add(lockupPeriod) <= now,
             "Pool: Withdrawal is locked up"
@@ -116,7 +117,10 @@ contract HegicETHPool is
      * @param amount Amount of funds that should be unlocked in an expired option
      */
     function unlock(uint256 amount) external override onlyOwner {
-        require(lockedAmount >= amount, "Pool Error: You are trying to unlock more funds than have been locked for your contract. Please lower the amount.");
+        require(
+            lockedAmount >= amount,
+            "Pool Error: You are trying to unlock more funds than have been locked for your contract. Please lower the amount."
+        );
         lockedAmount = lockedAmount.sub(amount);
     }
 
@@ -133,7 +137,10 @@ contract HegicETHPool is
      * @param amount Amount of premiums that should be unlocked
      */
     function unlockPremium(uint256 amount) external override onlyOwner {
-        require(lockedPremium >= amount, "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount.");
+        require(
+            lockedPremium >= amount,
+            "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount."
+        );
         lockedPremium = lockedPremium.sub(amount);
     }
 
@@ -148,7 +155,10 @@ contract HegicETHPool is
         onlyOwner
     {
         require(to != address(0));
-        require(lockedAmount >= amount, "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount.");
+        require(
+            lockedAmount >= amount,
+            "Pool Error: You are trying to unlock more premiums than have been locked for the contract. Please lower the amount."
+        );
         to.transfer(amount);
     }
 
@@ -160,8 +170,7 @@ contract HegicETHPool is
     function shareOf(address account) external view returns (uint256 share) {
         if (totalSupply() > 0)
             share = totalBalance().mul(balanceOf(account)).div(totalSupply());
-        else
-            share = 0;
+        else share = 0;
     }
 
     /*
@@ -180,7 +189,11 @@ contract HegicETHPool is
         return address(this).balance.sub(lockedPremium);
     }
 
-    function _beforeTokenTransfer(address from, address, uint256) internal override {
+    function _beforeTokenTransfer(
+        address from,
+        address,
+        uint256
+    ) internal override {
         require(
             lastProvideTimestamp[from].add(lockupPeriod) <= now,
             "Pool: Withdrawal is locked up"

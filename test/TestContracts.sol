@@ -20,7 +20,6 @@
 pragma solidity ^0.6.8;
 import "../contracts/Interfaces.sol";
 
-
 contract FakeExchange {
     AggregatorInterface price;
 
@@ -76,7 +75,6 @@ contract FakeExchange {
     }
 }
 
-
 contract FakePriceProvider {
     uint256 public price;
 
@@ -92,7 +90,6 @@ contract FakePriceProvider {
         price = _price;
     }
 }
-
 
 contract FakeUSD is ERC20("FakeUSD", "FAKE") {
     function mintTo(address account, uint256 amount) public {
