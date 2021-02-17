@@ -26,7 +26,7 @@ An option is a contract giving the buyer _the right, but not the obligation_, to
 
 ## How Hegic Protocol V1.1 Works
 
-![alt text](https://i.imgur.com/m1Soox3.png) 
+![alt text](https://i.imgur.com/m1Soox3.png)
 
 ---
 
@@ -54,7 +54,7 @@ ETH Put Options are created and exercised via **HegicPutOptions** and **HegicERC
 
 **[Added on 28.05.2020. Fixed on 31/05/2020] ATTENTION! PLEASE READ THIS! During the first 90 days after the V1.1 contracts deployment (deployed on 30/05/2020) the owner address will be a highly privileged account. It means that the contracts will be under the owner's control. After 90 days from the `contractCreationTimestamp` time, these priviledges will be lost forever and the contracts owner will only be able to use `setLockupPeriod` (LockupPeriod value can only be <60 days), `setImpliedVolRate`, `setMaxSpread` functions of the contracts.**
 
-See below: 
+See below:
 
     /**
      * @notice Can be used to update the contract in critical situations

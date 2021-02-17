@@ -20,7 +20,6 @@
 pragma solidity 0.6.8;
 import "./HegicOptions.sol";
 
-
 /**
  * @author 0mllwntrmt3
  * @title Hegic ETH Call Options
@@ -60,8 +59,12 @@ contract HegicCallOptions is HegicOptions {
      * @notice Sends premiums to the ETH liquidity pool contract
      * @param amount The amount of premiums that will be sent to the pool
      */
-    function sendPremium(uint amount) internal override returns (uint locked) {
-        pool.sendPremium {value: amount}();
+    function sendPremium(uint256 amount)
+        internal
+        override
+        returns (uint256 locked)
+    {
+        pool.sendPremium{value: amount}();
         locked = amount;
     }
 
@@ -80,11 +83,13 @@ contract HegicCallOptions is HegicOptions {
     function payProfit(Option memory option)
         internal
         override
-        returns (uint profit)
+        returns (uint256 profit)
     {
-        uint currentPrice = uint(priceProvider.latestAnswer());
+        uint256 currentPrice = uint256(priceProvider.latestAnswer());
         require(option.strike <= currentPrice, "Current price is too low");
-        profit = currentPrice.sub(option.strike).mul(option.amount).div(currentPrice);
+        profit = currentPrice.sub(option.strike).mul(option.amount).div(
+            currentPrice
+        );
         pool.send(option.holder, profit);
         unlockFunds(option);
     }

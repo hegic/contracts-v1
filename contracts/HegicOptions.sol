@@ -21,14 +21,12 @@ pragma solidity 0.6.8;
 import "./HegicERCPool.sol";
 import "./HegicETHPool.sol";
 
-
 /**
  * @author 0mllwntrmt3
  * @title Hegic: On-chain Options Trading Protocol on Ethereum
  * @notice Hegic Protocol Options Contract
  */
-abstract
-contract HegicOptions is Ownable {
+abstract contract HegicOptions is Ownable {
     using SafeMath for uint256;
 
     address payable public settlementFeeRecipient;
@@ -85,7 +83,10 @@ contract HegicOptions is Ownable {
      * @notice Used for changing settlementFeeRecipient
      * @param recipient New settlementFee recipient address
      */
-    function setSettlementFeeRecipient(address payable recipient) external onlyOwner {
+    function setSettlementFeeRecipient(address payable recipient)
+        external
+        onlyOwner
+    {
         require(recipient != address(0));
         settlementFeeRecipient = recipient;
     }
@@ -155,7 +156,7 @@ contract HegicOptions is Ownable {
      * @param optionIDs array of options
      */
     function unlockAll(uint256[] calldata optionIDs) external {
-        uint arrayLength = optionIDs.length;
+        uint256 arrayLength = optionIDs.length;
         for (uint256 i = 0; i < arrayLength; i++) {
             unlock(optionIDs[i]);
         }
@@ -240,19 +241,21 @@ contract HegicOptions is Ownable {
         uint256 currentPrice
     ) internal view returns (uint256 fee) {
         if (optionType == OptionType.Put)
-            return amount
-                .mul(sqrt(period))
-                .mul(impliedVolRate)
-                .mul(strike)
-                .div(currentPrice)
-                .div(PRICE_DECIMALS);
+            return
+                amount
+                    .mul(sqrt(period))
+                    .mul(impliedVolRate)
+                    .mul(strike)
+                    .div(currentPrice)
+                    .div(PRICE_DECIMALS);
         else
-            return amount
-                .mul(sqrt(period))
-                .mul(impliedVolRate)
-                .mul(currentPrice)
-                .div(strike)
-                .div(PRICE_DECIMALS);
+            return
+                amount
+                    .mul(sqrt(period))
+                    .mul(impliedVolRate)
+                    .mul(currentPrice)
+                    .div(strike)
+                    .div(PRICE_DECIMALS);
     }
 
     /**
@@ -285,6 +288,7 @@ contract HegicOptions is Ownable {
         returns (uint256 amount);
 
     function lockFunds(Option memory option) internal virtual;
+
     function unlockFunds(Option memory option) internal virtual;
 
     /**

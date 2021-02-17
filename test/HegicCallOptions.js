@@ -364,7 +364,9 @@ contract("HegicCallOptions", ([user1, user2, user3, user4]) => {
     const value = await ETHPool.availableBalance()
     await timeTravel(14 * 24 * 3600 + 1)
     // await ETHPool.lockupPeriod().then(timeTravel)
-    await ETHPool.withdraw(value, "100000000000000000000000000000000", {from: user4})
+    await ETHPool.withdraw(value, "100000000000000000000000000000000", {
+      from: user4,
+    })
   })
 
   it("Should print prices", () => {

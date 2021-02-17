@@ -6,7 +6,6 @@ const DAIContract = artifacts.require("FakeUSD")
 const PriceContract = artifacts.require("FakePriceProvider")
 const BN = web3.utils.BN
 
-
 const send = (method, params = []) =>
   new Promise((done) =>
     web3.currentProvider.send({id: 0, jsonrpc: "2.0", method, params}, done)

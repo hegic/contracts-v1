@@ -20,7 +20,6 @@
 pragma solidity 0.6.8;
 import "./HegicOptions.sol";
 
-
 /**
  * @author 0mllwntrmt3
  * @title Hegic ETH Put Options
@@ -41,10 +40,7 @@ contract HegicPutOptions is HegicOptions {
         IERC20 _token,
         AggregatorInterface _priceProvider,
         IUniswapV2Router01 _uniswapRouter
-    )
-        public
-        HegicOptions(_priceProvider, HegicOptions.OptionType.Put)
-    {
+    ) public HegicOptions(_priceProvider, HegicOptions.OptionType.Put) {
         token = _token;
         uniswapRouter = _uniswapRouter;
         pool = new HegicERCPool(token);
@@ -91,12 +87,16 @@ contract HegicPutOptions is HegicOptions {
     /**
      * @notice Sends premiums to the ERC liquidity pool contract
      */
-    function sendPremium(uint256 amount) internal override returns (uint premium) {
-        uint currentPrice = uint(priceProvider.latestAnswer());
+    function sendPremium(uint256 amount)
+        internal
+        override
+        returns (uint256 premium)
+    {
+        uint256 currentPrice = uint256(priceProvider.latestAnswer());
         address[] memory path = new address[](2);
         path[0] = uniswapRouter.WETH();
         path[1] = address(token);
-        uint[] memory amounts = uniswapRouter.swapExactETHForTokens {
+        uint256[] memory amounts = uniswapRouter.swapExactETHForTokens{
             value: amount
         }(
             amount.mul(currentPrice).mul(maxSpread).div(1e10),
@@ -120,10 +120,16 @@ contract HegicPutOptions is HegicOptions {
      * @notice Sends profits in DAI from the ERC pool to a put option holder's address
      * @param option A specific option contract
      */
-    function payProfit(Option memory option) internal override returns (uint profit) {
-        uint currentPrice = uint(priceProvider.latestAnswer());
+    function payProfit(Option memory option)
+        internal
+        override
+        returns (uint256 profit)
+    {
+        uint256 currentPrice = uint256(priceProvider.latestAnswer());
         require(option.strike >= currentPrice, "Current price is too high");
-        profit = option.strike.sub(currentPrice).mul(option.amount).div(PRICE_DECIMALS);
+        profit = option.strike.sub(currentPrice).mul(option.amount).div(
+            PRICE_DECIMALS
+        );
         pool.send(option.holder, profit);
         unlockFunds(option);
     }
