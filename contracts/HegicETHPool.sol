@@ -121,7 +121,7 @@ contract HegicETHPool is
     }
 
     /*
-     * @nonce calls by HegicPutOptions to lock the premiums
+     * @nonce calls by HegicCallOptions to lock the premiums
      * @param amount Amount of premiums that should be locked
      */
     function sendPremium() external override payable onlyOwner {
@@ -129,7 +129,7 @@ contract HegicETHPool is
     }
 
     /*
-     * @nonce calls by HegicPutOptions to unlock the premiums after an option's expiraton
+     * @nonce calls by HegicCallOptions to unlock the premiums after an option's expiraton
      * @param amount Amount of premiums that should be unlocked
      */
     function unlockPremium(uint256 amount) external override onlyOwner {
